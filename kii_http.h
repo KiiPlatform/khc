@@ -5,10 +5,11 @@ typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t nitems, void *
 typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t nitems, void *userdata);
 
 typedef struct kii_slist {
-
+  char* data;
+  kii_slist* next;
 } kii_slist;
 
-kii_slist* kii_slist_append(kii_slist* slist, const char* string);
+kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length);
 
 void kii_slist_free_all(kii_slist* slist);
 
