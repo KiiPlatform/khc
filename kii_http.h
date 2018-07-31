@@ -1,5 +1,10 @@
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t nmemb, void *userdata);
 typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t nitems, void *instream);
 typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t nitems, void *userdata);
@@ -41,3 +46,7 @@ typedef enum kii_http_code {
 } kii_http_code;
 
 kii_http_code kii_http_perform(kii_http* kii_http);
+
+#ifdef __cplusplus
+}
+#endif
