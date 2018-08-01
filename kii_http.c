@@ -35,6 +35,7 @@ void kii_slist_free_all(kii_slist* slist) {
   while (curr != NULL) {
     kii_slist *next = curr->next;
     free(curr->data);
+    curr->data = NULL;
     free(curr);
     curr = next;
   }
