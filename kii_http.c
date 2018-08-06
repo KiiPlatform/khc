@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "kii_http.h"
 #include "kii_socket_callback.h"
-#include "secure_socket_impl.h"
 
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
   return 0;
@@ -60,9 +59,9 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       if (s_ctx == NULL) {
         return KII_NG;
       }
-      kii_socket_code_t con_res = s_connect_cb(s_ctx, kii_http->host, 8080);
+      kii_socket_code_t con_res = kii_http->sc_connect_cb(s_ctx, kii_http->host, 8080);
       if (con_res == KII_SOCKETC_OK) {
-        kii_http->state = REQUEST_HEADERS;
+        kii_http->state = REQUEST_LINE;
         continue;
       }
       if (con_res == KII_SOCKETC_AGAIN) {
@@ -72,7 +71,27 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         free(s_ctx);
         return KII_NG;
       }
-    }    
+    }
+    if (kii_http->state =- REQUEST_LINE) {
+      char* request_line[64];
+      request_line[0] = '\0';
+      strcat(request_line, kii_http->method);
+      strcat(request_line, " ");
+      char http_version[] = "HTTP 1.0\r\n";
+      strcat(request_line, http_version);
+      kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, request_line, strlen(request_line));
+      if (send_res == KII_SOCKETC_OK) {
+        kii_http->state = REQUEST_HEADERS;
+        continue;
+      }
+      if (send_res == KII_SOCKETC_AGAIN) {
+        continue;
+      }
+      if (send_res == KII_SOCKETC_FAIL) {
+        kii_http->state = CLOSE_AFTER_FAILURE;
+        continue;
+      }
+    }
     if (kii_http->state == REQUEST_HEADERS) {
       while(curr != NULL) {
         size_t len = strlen(curr->data);
@@ -91,7 +110,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
           len = len + 2;
           line[len-1] = '\0';
         }
-        kii_socket_code_t send_res = s_send_cb(s_ctx, line, len);
+        kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, line, len);
         free(line);
         if (send_res == KII_SOCKETC_OK) {
           curr = curr->next;
@@ -101,8 +120,8 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
           continue;
         }
         if (send_res == KII_SOCKETC_FAIL) {
-          kii_http->state = CLOSE;
-          return KII_NG;
+          kii_http->state = CLOSE_AFTER_FAILURE;
+          continue;
         }
       }
       kii_http->state = REQUEST_BODY;

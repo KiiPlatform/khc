@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "kii_socket_callback.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -30,19 +31,26 @@ typedef struct kii_http {
   char* path;
   char* method;
   kii_http_state state;
+  KII_SOCKET_CONNECT_CB sc_connect_cb;
+  KII_SOCKET_SEND_CB sc_send_cb;
+  KII_SOCKET_RECV_CB sc_recv_cb;
+  KII_SOCKET_CLOSE_CB sc_close_cb;
 } kii_http;
 
 typedef enum kii_http_state {
   IDLE,
   CONNECT,
+  REQUEST_LINE,
   REQUEST_HEADERS,
   REQUEST_BODY,
   RESPONSE_HEADERS,
   RESPONSE_BODY,
-  CLOSE
+  CLOSE,
+  CLOSE_AFTER_FAILURE,
 } kii_http_state;
 
 typedef enum kii_http_code {
+  // TODO: Add codes.
   KII_OK,
   KII_NG
 } kii_http_code;
