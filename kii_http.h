@@ -19,12 +19,14 @@ kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length)
 
 void kii_slist_free_all(kii_slist* slist);
 
+#define READ_BUFFER_SIZE 1024
+
 typedef struct kii_http {
-  WRITE_CALLBACK* write_callback;
+  WRITE_CALLBACK write_callback;
   void* write_data;
-  READ_CALLBACK* read_callback;
+  READ_CALLBACK read_callback;
   void* read_data;
-  HEADER_CALLBACK* header_callback;
+  HEADER_CALLBACK header_callback;
   void* header_data;
   kii_slist* reaquest_headers;
   char* host;
@@ -35,6 +37,9 @@ typedef struct kii_http {
   KII_SOCKET_SEND_CB sc_send_cb;
   KII_SOCKET_RECV_CB sc_recv_cb;
   KII_SOCKET_CLOSE_CB sc_close_cb;
+  char read_buffer[READ_BUFFER_SIZE];
+  size_t read_size;
+  int read_buffer_need_resend;
 } kii_http;
 
 typedef enum kii_http_state {

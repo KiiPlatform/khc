@@ -50,6 +50,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
   if (kii_http->method == NULL) {
     return KII_NG;
   }
+  memset(kii_http->read_buffer, '\0', READ_BUFFER_SIZE);
   kii_http->state = CONNECT;
   kii_socket_context_t* s_ctx = NULL;
   kii_slist* curr = kii_http->reaquest_headers;
@@ -125,9 +126,56 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         }
       }
       kii_http->state = REQUEST_BODY;
+      kii_http->read_buffer_need_resend = 0;
       continue;
     }
-
+    if (kii_http->state == REQUEST_BODY) {
+      if (kii_http->read_buffer_need_resend == 0) {
+        size_t read_size = kii_http->read_callback(kii_http->read_buffer, 1, 1024, kii_http->read_data);
+        if (read_size > 0) {
+          kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, kii_http->read_buffer, read_size);
+          if (send_res == KII_SOCKETC_OK) {
+            kii_http->read_buffer_need_resend = 0;
+            continue;
+          }
+          if (send_res == KII_SOCKETC_AGAIN) {
+            kii_http->read_buffer_need_resend = 1;
+            kii_http->read_size = read_size;
+            continue;
+          }
+          if (send_res == KII_SOCKETC_FAIL) {
+            kii_http->state = CLOSE_AFTER_FAILURE;
+            kii_http->read_buffer_need_resend = 0;
+            continue;
+          }
+        }
+        if (read_size == 0) {
+          // Have READ the whole request.
+          kii_http->state = RESPONSE_HEADERS;
+          continue;
+        }
+        if (read_size < 0) {
+          // Failed to read.
+          kii_http->state = CLOSE_AFTER_FAILURE;
+          continue;
+        }
+      } else { // In case Non-Blocking socket requires resend the buffer.
+        kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, kii_http->read_buffer, kii_http->read_size);
+        if (send_res == KII_SOCKETC_OK) {
+          kii_http->read_buffer_need_resend = 0;
+          continue;
+        }
+        if (send_res == KII_SOCKETC_AGAIN) {
+          kii_http->read_buffer_need_resend = 1;
+          continue;
+        }
+        if (send_res == KII_SOCKETC_FAIL) {
+          kii_http->state = CLOSE_AFTER_FAILURE;
+          kii_http->read_buffer_need_resend = 0;
+          continue;
+        }
+      }
+    }
   }
 
 
