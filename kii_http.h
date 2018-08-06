@@ -26,8 +26,10 @@ typedef struct kii_http {
   HEADER_CALLBACK* header_callback;
   void* header_data;
   kii_slist* reaquest_headers;
-  char* url;
+  char* host;
+  char* path;
   char* method;
+  kii_http_state state;
 } kii_http;
 
 typedef enum kii_http_state {
