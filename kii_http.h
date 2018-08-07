@@ -19,7 +19,9 @@ kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length)
 
 void kii_slist_free_all(kii_slist* slist);
 
-#define READ_BUFFER_SIZE 1024
+#define READ_REQ_BUFFER_SIZE 1024
+#define READ_RESP_HEADER_SIZE 1024
+#define READ_BODY_SIZE 1024
 
 typedef struct kii_http {
   WRITE_CALLBACK write_callback;
@@ -28,18 +30,46 @@ typedef struct kii_http {
   void* read_data;
   HEADER_CALLBACK header_callback;
   void* header_data;
+
+  /** Request header list */
   kii_slist* reaquest_headers;
+
   char* host;
   char* path;
   char* method;
+
+  /** State machine */
   kii_http_state state;
+
+  /** Socket functions. */
   KII_SOCKET_CONNECT_CB sc_connect_cb;
   KII_SOCKET_SEND_CB sc_send_cb;
   KII_SOCKET_RECV_CB sc_recv_cb;
   KII_SOCKET_CLOSE_CB sc_close_cb;
-  char read_buffer[READ_BUFFER_SIZE];
+
+  /** Request body buffer stream */
+  char read_buffer[READ_REQ_BUFFER_SIZE];
   size_t read_size;
   int read_buffer_need_resend;
+
+  /** Response header buffer (Dynamic allocation) */
+  char* resp_header_buffer;
+  size_t resp_header_buffer_size;
+
+  /** Pointer to the \r\n\r\n boundary in the resp_header_buffer */
+  char* body_boundary;
+
+  /** Header callback */
+  char* current_header;
+  size_t remaining_header_buffer_size;
+
+  char* body_flagment;
+  char* body_flagment_size;
+  int read_end;
+
+  char body_buffer[READ_BODY_SIZE];
+  size_t body_read_size;
+
 } kii_http;
 
 typedef enum kii_http_state {
@@ -48,8 +78,13 @@ typedef enum kii_http_state {
   REQUEST_LINE,
   REQUEST_HEADERS,
   REQUEST_BODY,
-  RESPONSE_HEADERS,
-  RESPONSE_BODY,
+  RESPONSE_HEADERS_ALLOC,
+  RESPONSE_HEADERS_READ,
+  RESPONSE_HEADERS_CALLBACK,
+  /** Process flagment of body obtaind when trying to find body boundary. */
+  RESPONSE_BODY_FLAGMENT,
+  RESPONSE_BODY_READ,
+  RESPONSE_BODY_CALLBACK,
   CLOSE,
   CLOSE_AFTER_FAILURE,
 } kii_http_state;
