@@ -49,7 +49,7 @@ void kii_state_request_line(kii_http* kii_http) {
     return;
   }
   if (send_res == KII_SOCKETC_FAIL) {
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_SEND_REQUEST_LINE;
     return;
   } 
@@ -95,7 +95,7 @@ void kii_state_request_header_send(kii_http* kii_http) {
   }
   if (send_res == KII_SOCKETC_FAIL) {
     free(line);
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_SEND_REQUEST_HEADER;
     return;
   } 
@@ -112,7 +112,7 @@ void kii_state_request_header_end(kii_http* kii_http) {
     return;
   }
   if (send_res == KII_SOCKETC_FAIL) {
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_SEND_REQUEST_HEADER;
     return;
   }
@@ -142,7 +142,7 @@ void kii_state_request_body_send(kii_http* kii_http) {
     return;
   }
   if (send_res == KII_SOCKETC_FAIL) {
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_SEND_REQUEST_BODY;
     return;
   }
@@ -151,7 +151,7 @@ void kii_state_request_body_send(kii_http* kii_http) {
 void kii_state_response_headers_alloc(kii_http* kii_http) {
   kii_http->resp_header_buffer = malloc(READ_RESP_HEADER_SIZE);
   if (kii_http->resp_header_buffer == NULL) {
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_ALLOCATION;
     return;
   }
@@ -166,7 +166,7 @@ void kii_state_response_headers_realloc(kii_http* kii_http) {
     free(kii_http->resp_header_buffer);
     kii_http->resp_header_buffer = NULL;
     kii_http->resp_header_buffer_size = 0;
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_ALLOCATION;
     return;
   }
@@ -209,7 +209,7 @@ void kii_state_response_headers_read(kii_http* kii_http) {
     free(start);
     kii_http->resp_header_buffer = NULL;
     kii_http->resp_header_buffer_size = 0;
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_READ_HEADER;
     return;
   }
@@ -221,7 +221,7 @@ void kii_state_response_headers_callback(kii_http* kii_http) {
   size_t header_written = 
     kii_http->header_callback(kii_http->current_header, 1, header_size, kii_http->header_data);
   if (header_written != header_size) { // Error in callback function.
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_HEADER_CALLBACK;
     free(kii_http->resp_header_buffer);
     kii_http->resp_header_buffer = NULL;
@@ -262,7 +262,7 @@ void kii_state_response_body_flagment(kii_http* kii_http) {
   kii_http->resp_header_buffer = NULL;
   kii_http->resp_header_buffer_size = 0;
   if (written != kii_http->body_flagment_size) { // Error in write callback.
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_WRITE_CALLBACK;
     return;
   }
@@ -291,7 +291,7 @@ void kii_state_response_body_read(kii_http* kii_http) {
     return;
   }
   if (read_res == KII_SOCKETC_FAIL) {
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_READ_BODY;
     return;
   }
@@ -300,7 +300,7 @@ void kii_state_response_body_read(kii_http* kii_http) {
 void kii_state_response_body_callback(kii_http* kii_http) {
   size_t written = kii_http->write_callback(kii_http->body_buffer, 1, kii_http->body_read_size, kii_http->write_data);
   if (written < kii_http->body_read_size) { // Error in write callback.
-    kii_http->state = CLOSE_AFTER_FAILURE;
+    kii_http->state = CLOSE;
     kii_http->result = KIIE_WRITE_CALLBACK;
     return;
   }

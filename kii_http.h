@@ -41,7 +41,6 @@ typedef enum kii_http_state {
   RESPONSE_BODY_READ,
   RESPONSE_BODY_CALLBACK,
   CLOSE,
-  CLOSE_AFTER_FAILURE,
   FINISHED,
 } kii_http_state;
 
