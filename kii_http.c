@@ -71,7 +71,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       }
     }
     if (kii_http->state == REQUEST_LINE) {
-      char* request_line[64];
+      char request_line[64];
       request_line[0] = '\0';
       strcat(request_line, kii_http->method);
       strcat(request_line, " ");
@@ -150,11 +150,6 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
           kii_http->state = RESPONSE_HEADERS_ALLOC;
           continue;
         }
-        if (read_size < 0) {
-          // Failed to read.
-          kii_http->state = CLOSE_AFTER_FAILURE;
-          continue;
-        }
       } else { // In case Non-Blocking socket requires resend the buffer.
         kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, kii_http->read_size);
         if (send_res == KII_SOCKETC_OK) {
@@ -206,7 +201,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         if (read_size == 0) {
           kii_http->read_end = 1;
         }
-        char* start = kii_http->resp_header_buffer + READ_RESP_HEADER_SIZE - kii_http->resp_header_buffer;
+        char* start = kii_http->resp_header_buffer + READ_RESP_HEADER_SIZE - kii_http->resp_header_buffer_size;
         // Search boundary for whole buffer.
         char* boundary = strnstr(start, "\r\n\r\n", kii_http->resp_header_buffer_size);
         if (boundary == NULL) {

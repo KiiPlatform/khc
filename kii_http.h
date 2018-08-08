@@ -23,6 +23,29 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
 
+typedef enum kii_http_state {
+  IDLE,
+  CONNECT,
+  REQUEST_LINE,
+  REQUEST_HEADERS,
+  REQUEST_BODY,
+  RESPONSE_HEADERS_ALLOC,
+  RESPONSE_HEADERS_READ,
+  RESPONSE_HEADERS_CALLBACK,
+  /** Process flagment of body obtaind when trying to find body boundary. */
+  RESPONSE_BODY_FLAGMENT,
+  RESPONSE_BODY_READ,
+  RESPONSE_BODY_CALLBACK,
+  CLOSE,
+  CLOSE_AFTER_FAILURE,
+} kii_http_state;
+
+typedef enum kii_http_code {
+  // TODO: Add codes.
+  KII_OK,
+  KII_NG
+} kii_http_code;
+
 typedef struct kii_http {
   WRITE_CALLBACK write_callback;
   void* write_data;
@@ -66,36 +89,13 @@ typedef struct kii_http {
   size_t remaining_header_buffer_size;
 
   char* body_flagment;
-  char* body_flagment_size;
+  size_t body_flagment_size;
   int read_end;
 
   char body_buffer[READ_BODY_SIZE];
   size_t body_read_size;
 
 } kii_http;
-
-typedef enum kii_http_state {
-  IDLE,
-  CONNECT,
-  REQUEST_LINE,
-  REQUEST_HEADERS,
-  REQUEST_BODY,
-  RESPONSE_HEADERS_ALLOC,
-  RESPONSE_HEADERS_READ,
-  RESPONSE_HEADERS_CALLBACK,
-  /** Process flagment of body obtaind when trying to find body boundary. */
-  RESPONSE_BODY_FLAGMENT,
-  RESPONSE_BODY_READ,
-  RESPONSE_BODY_CALLBACK,
-  CLOSE,
-  CLOSE_AFTER_FAILURE,
-} kii_http_state;
-
-typedef enum kii_http_code {
-  // TODO: Add codes.
-  KII_OK,
-  KII_NG
-} kii_http_code;
 
 kii_http_code kii_http_perform(kii_http* kii_http);
 
