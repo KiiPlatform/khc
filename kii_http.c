@@ -94,22 +94,19 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       int aborted = 0;
       while(curr != NULL) {
         size_t len = strlen(curr->data);
-        char* line = malloc(len+5);
+        char line[len+5];
         if (line == NULL) {
           kii_http->state = CLOSE_AFTER_FAILURE;
         }
-        *line = '\0';
-        line = strcat(line, curr->data);
-        line = strcat(line, "\r\n");
+        line[0] = '\0';
+        strcat(line, curr->data);
+        strcat(line, "\r\n");
         len = len + 2;
-        line[len-1] = '\0';
         if (curr->next == NULL) {
-          line = strcat(line, "\r\n");
+          strcat(line, "\r\n");
           len = len + 2;
-          line[len-1] = '\0';
         }
         kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, len);
-        free(line);
         if (send_res == KII_SOCKETC_OK) {
           curr = curr->next;
           continue;
