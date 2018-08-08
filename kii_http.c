@@ -76,7 +76,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         return KII_NG;
       }
     }
-    if (kii_http->state =- REQUEST_LINE) {
+    if (kii_http->state == REQUEST_LINE) {
       char* request_line[64];
       request_line[0] = '\0';
       strcat(request_line, kii_http->method);
@@ -101,10 +101,9 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         size_t len = strlen(curr->data);
         char* line = malloc(len+5);
         if (line == NULL) {
-          kii_http->state = CLOSE;
-          return KII_NG;
+          kii_http->state = CLOSE_AFTER_FAILURE;
         }
-        line = '\0';
+        *line = '\0';
         line = strcat(line, curr->data);
         line = strcat(line, "\r\n");
         len = len + 2;
