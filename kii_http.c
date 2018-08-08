@@ -79,7 +79,8 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       strcat(request_line, http_version);
       kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, request_line, strlen(request_line));
       if (send_res == KII_SOCKETC_OK) {
-        kii_http->state = REQUEST_HEADERS;
+        kii_http->state = REQUEST_HEADER;
+        kii_http->current_request_header = kii_http->reaquest_headers;
         continue;
       }
       if (send_res == KII_SOCKETC_AGAIN) {
@@ -90,39 +91,61 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         continue;
       }
     }
-    if (kii_http->state == REQUEST_HEADERS) {
-      int aborted = 0;
-      while(curr != NULL) {
-        size_t len = strlen(curr->data);
-        char line[len+5];
-        line[0] = '\0';
-        strcat(line, curr->data);
-        strcat(line, "\r\n");
-        len = len + 2;
-        if (curr->next == NULL) {
-          strcat(line, "\r\n");
-          len = len + 2;
-        }
-        kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, len);
-        if (send_res == KII_SOCKETC_OK) {
-          curr = curr->next;
-          continue;
-        }
-        if (send_res == KII_SOCKETC_AGAIN) {
-          continue;
-        }
-        if (send_res == KII_SOCKETC_FAIL) {
-          aborted = 1;
-          break;
-        }
+    if (kii_http->state == REQUEST_HEADER) {
+      if (kii_http->current_request_header == NULL) {
+        kii_http->state = REQUEST_HEADER_END;
+        continue;
       }
-      if (aborted == 1) {
+      char* data = kii_http->current_request_header->data;
+      if (data == NULL) {
+        // Skip if data is NULL.
+        kii_http->current_request_header = kii_http->current_request_header->next;
+        continue;
+      }
+      size_t len = strlen(data);
+      if (len == 0) {
+        // Skip if nothing to send.
+        kii_http->current_request_header = kii_http->current_request_header->next;
+        continue;
+      }
+      char line[len+3]; // 3 = CRLF + terminater.
+      line[0] = '\0';
+      strcat(line, data);
+      strcat(line, "\r\n");
+      line[len+2] = '\0';
+      kii_http->header_to_send = line;
+      kii_http->state = REQUEST_HEADER_SEND;
+    }
+    if (kii_http->state == REQUEST_HEADER_SEND) {
+      char* line = kii_http->header_to_send;
+      kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, strlen(line));
+      if (send_res == KII_SOCKETC_OK) {
+        kii_http->current_request_header = kii_http->current_request_header->next;
+        kii_http->state = REQUEST_HEADER;
+        continue;
+      }
+      if (send_res == KII_SOCKETC_AGAIN) {
+        continue;
+      }
+      if (send_res == KII_SOCKETC_FAIL) {
         kii_http->state = CLOSE_AFTER_FAILURE;
         continue;
       }
-      kii_http->state = REQUEST_BODY_READ;
-      kii_http->read_request_end = 0;
-      continue;
+    }
+    if (kii_http->state == REQUEST_HEADER_END) {
+      kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, "\r\n", 2);
+      if (send_res == KII_SOCKETC_OK) {
+        kii_http->state = REQUEST_BODY_READ;
+        kii_http->read_request_end = 0;
+        continue;
+      }
+      if (send_res == KII_SOCKETC_AGAIN) {
+        continue;
+      }
+      if (send_res == KII_SOCKETC_FAIL) {
+        kii_http->state = CLOSE_AFTER_FAILURE;
+        continue;
+      }
     }
     if (kii_http->state == REQUEST_BODY_READ) {
       kii_http->read_size = kii_http->read_callback(kii_http->read_buffer, 1, READ_BODY_SIZE, kii_http->read_data);

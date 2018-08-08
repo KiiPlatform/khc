@@ -27,7 +27,9 @@ typedef enum kii_http_state {
   IDLE,
   CONNECT,
   REQUEST_LINE,
-  REQUEST_HEADERS,
+  REQUEST_HEADER,
+  REQUEST_HEADER_SEND,
+  REQUEST_HEADER_END,
   REQUEST_BODY_READ,
   REQUEST_BODY_SEND,
   RESPONSE_HEADERS_ALLOC,
@@ -72,6 +74,9 @@ typedef struct kii_http {
   KII_SOCKET_CLOSE_CB sc_close_cb;
   /** Socket context. */
   void* socket_context;
+
+  kii_slist* current_request_header;
+  char* header_to_send;
 
   /** Request body buffer stream */
   char read_buffer[READ_REQ_BUFFER_SIZE];
