@@ -32,6 +32,7 @@ typedef enum kii_http_state {
   REQUEST_LINE,
   REQUEST_HEADER,
   REQUEST_HEADER_SEND,
+  REQUEST_HEADER_SEND_CRLF,
   REQUEST_HEADER_END,
   REQUEST_BODY_READ,
   REQUEST_BODY_SEND,
@@ -90,7 +91,6 @@ typedef struct kii_http {
   void* socket_context;
 
   kii_slist* current_request_header;
-  char* header_to_send;
 
   /** Request body buffer stream */
   char read_buffer[READ_REQ_BUFFER_SIZE];

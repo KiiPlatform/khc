@@ -76,20 +76,30 @@ void kii_state_request_header(kii_http* kii_http) {
     kii_http->current_request_header = kii_http->current_request_header->next;
     return;
   }
-  char* line = malloc(len+3); // 3 = CRLF + terminater.
-  *line = '\0';
-  strcat(line, data);
-  strcat(line, "\r\n");
-  line[len+2] = '\0';
-  kii_http->header_to_send = line;
   kii_http->state = REQUEST_HEADER_SEND;
 }
 
 void kii_state_request_header_send(kii_http* kii_http) {
-  char* line = kii_http->header_to_send;
+  char* line = kii_http->current_request_header->data;
   kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, strlen(line));
   if (send_res == KII_SOCKETC_OK) {
-    free(line);
+    kii_http->current_request_header = kii_http->current_request_header->next;
+    kii_http->state = REQUEST_HEADER_SEND_CRLF;
+    return;
+  }
+  if (send_res == KII_SOCKETC_AGAIN) {
+    return;
+  }
+  if (send_res == KII_SOCKETC_FAIL) {
+    kii_http->state = CLOSE;
+    kii_http->result = KIIE_SEND_REQUEST_HEADER;
+    return;
+  } 
+}
+
+void kii_state_request_header_send_crlf(kii_http* kii_http) {
+  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, "\r\n", 2);
+  if (send_res == KII_SOCKETC_OK) {
     kii_http->current_request_header = kii_http->current_request_header->next;
     kii_http->state = REQUEST_HEADER;
     return;
@@ -98,7 +108,6 @@ void kii_state_request_header_send(kii_http* kii_http) {
     return;
   }
   if (send_res == KII_SOCKETC_FAIL) {
-    free(line);
     kii_http->state = CLOSE;
     kii_http->result = KIIE_SEND_REQUEST_HEADER;
     return;
