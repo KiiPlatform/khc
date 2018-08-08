@@ -91,6 +91,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       }
     }
     if (kii_http->state == REQUEST_HEADERS) {
+      int aborted = 0;
       while(curr != NULL) {
         size_t len = strlen(curr->data);
         char* line = malloc(len+5);
@@ -117,9 +118,13 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
           continue;
         }
         if (send_res == KII_SOCKETC_FAIL) {
-          kii_http->state = CLOSE_AFTER_FAILURE;
-          continue;
+          aborted = 1;
+          break;
         }
+      }
+      if (aborted == 1) {
+        kii_http->state = CLOSE_AFTER_FAILURE;
+        continue;
       }
       kii_http->state = REQUEST_BODY;
       kii_http->read_buffer_need_resend = 0;
