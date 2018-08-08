@@ -33,6 +33,7 @@ typedef enum kii_http_state {
   REQUEST_BODY_READ,
   REQUEST_BODY_SEND,
   RESPONSE_HEADERS_ALLOC,
+  RESPONSE_HEADERS_REALLOC,
   RESPONSE_HEADERS_READ,
   RESPONSE_HEADERS_CALLBACK,
   /** Process flagment of body obtaind when trying to find body boundary. */

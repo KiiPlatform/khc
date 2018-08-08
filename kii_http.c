@@ -163,30 +163,29 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       }
     }
     if (kii_http->state == RESPONSE_HEADERS_ALLOC) {
+      kii_http->resp_header_buffer = malloc(READ_RESP_HEADER_SIZE);
       if (kii_http->resp_header_buffer == NULL) {
-        kii_http->resp_header_buffer = malloc(READ_RESP_HEADER_SIZE);
-        if (kii_http->resp_header_buffer == NULL) {
-          kii_http->state = CLOSE_AFTER_FAILURE;
-          continue;
-        }
-        kii_http->resp_header_buffer_size = READ_RESP_HEADER_SIZE;
-        kii_http->state = RESPONSE_HEADERS_READ;
-        continue;
-      } else {
-        void* newBuff = realloc(kii_http->resp_header_buffer, kii_http->resp_header_buffer_size + READ_RESP_HEADER_SIZE);
-        if (newBuff == NULL) {
-          free(kii_http->resp_header_buffer);
-          kii_http->resp_header_buffer = NULL;
-          kii_http->resp_header_buffer_size = 0;
-          kii_http->state = CLOSE_AFTER_FAILURE;
-          continue;
-        }
-        // Pointer: last part newly allocated.
-        kii_http->resp_header_buffer = newBuff + kii_http->resp_header_buffer_size;
-        kii_http->resp_header_buffer_size = kii_http->resp_header_buffer_size + READ_RESP_HEADER_SIZE;
-        kii_http->state = RESPONSE_HEADERS_READ;
+        kii_http->state = CLOSE_AFTER_FAILURE;
         continue;
       }
+      kii_http->resp_header_buffer_size = READ_RESP_HEADER_SIZE;
+      kii_http->state = RESPONSE_HEADERS_READ;
+      continue;
+    }
+    if (kii_http->state == RESPONSE_HEADERS_REALLOC) {
+      void* newBuff = realloc(kii_http->resp_header_buffer, kii_http->resp_header_buffer_size + READ_RESP_HEADER_SIZE);
+      if (newBuff == NULL) {
+        free(kii_http->resp_header_buffer);
+        kii_http->resp_header_buffer = NULL;
+        kii_http->resp_header_buffer_size = 0;
+        kii_http->state = CLOSE_AFTER_FAILURE;
+        continue;
+      }
+      // Pointer: last part newly allocated.
+      kii_http->resp_header_buffer = newBuff + kii_http->resp_header_buffer_size;
+      kii_http->resp_header_buffer_size = kii_http->resp_header_buffer_size + READ_RESP_HEADER_SIZE;
+      kii_http->state = RESPONSE_HEADERS_READ;
+      continue;
     }
     if (kii_http->state == RESPONSE_HEADERS_READ) {
       size_t read_size = 0;
@@ -201,7 +200,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         char* boundary = strnstr(start, "\r\n\r\n", kii_http->resp_header_buffer_size);
         if (boundary == NULL) {
           // Not reached to end of headers.
-          kii_http->state = RESPONSE_HEADERS_ALLOC;
+          kii_http->state = RESPONSE_HEADERS_REALLOC;
           continue;
         } else {
           kii_http->body_boundary = boundary;
