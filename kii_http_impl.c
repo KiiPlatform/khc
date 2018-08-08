@@ -1,4 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "kii_http.h"
+#include "kii_http_impl.h"
 
 void kii_state_idle(kii_http* kii_http) {
   if (kii_http->host == NULL) {
@@ -328,3 +332,21 @@ void kii_state_close(kii_http* kii_http) {
     return;
   }
 }
+
+const KII_STATE_HANDLER state_handlers[] = {
+  kii_state_idle,
+  kii_state_connect,
+  kii_state_request_line,
+  kii_state_request_header,
+  kii_state_request_header_send,
+  kii_state_request_header_end,
+  kii_state_request_body_read,
+  kii_state_request_body_send,
+  kii_state_response_headers_alloc,
+  kii_state_response_headers_realloc,
+  kii_state_response_headers_callback,
+  kii_state_response_body_flagment,
+  kii_state_response_body_read,
+  kii_state_response_body_callback,
+  kii_state_close
+};

@@ -1,10 +1,13 @@
-#include <stdio.h>
-#include "kii_socket_callback.h"
+#ifndef __kii_http
+#define __kii_http
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+#include <stdio.h>
+#include "kii_socket_callback.h"
 
 typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t nmemb, void *userdata);
 typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t nitems, void *instream);
@@ -120,3 +123,5 @@ kii_http_code kii_http_perform(kii_http* kii_http);
 #ifdef __cplusplus
 }
 #endif
+
+#endif //__kii_http
