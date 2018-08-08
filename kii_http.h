@@ -28,7 +28,8 @@ typedef enum kii_http_state {
   CONNECT,
   REQUEST_LINE,
   REQUEST_HEADERS,
-  REQUEST_BODY,
+  REQUEST_BODY_READ,
+  REQUEST_BODY_SEND,
   RESPONSE_HEADERS_ALLOC,
   RESPONSE_HEADERS_READ,
   RESPONSE_HEADERS_CALLBACK,
@@ -75,7 +76,7 @@ typedef struct kii_http {
   /** Request body buffer stream */
   char read_buffer[READ_REQ_BUFFER_SIZE];
   size_t read_size;
-  int read_buffer_need_resend;
+  int read_request_end;
 
   /** Response header buffer (Dynamic allocation) */
   char* resp_header_buffer;

@@ -126,50 +126,35 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         kii_http->state = CLOSE_AFTER_FAILURE;
         continue;
       }
-      kii_http->state = REQUEST_BODY;
-      kii_http->read_buffer_need_resend = 0;
+      kii_http->state = REQUEST_BODY_READ;
+      kii_http->read_request_end = 0;
       continue;
     }
-    if (kii_http->state == REQUEST_BODY) {
-      if (kii_http->read_buffer_need_resend == 0) {
-        size_t read_size = kii_http->read_callback(kii_http->read_buffer, 1, READ_BODY_SIZE, kii_http->read_data);
-        if (read_size > 0) {
-          kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, read_size);
-          if (send_res == KII_SOCKETC_OK) {
-            kii_http->read_buffer_need_resend = 0;
-            continue;
-          }
-          if (send_res == KII_SOCKETC_AGAIN) {
-            kii_http->read_buffer_need_resend = 1;
-            kii_http->read_size = read_size;
-            continue;
-          }
-          if (send_res == KII_SOCKETC_FAIL) {
-            kii_http->state = CLOSE_AFTER_FAILURE;
-            kii_http->read_buffer_need_resend = 0;
-            continue;
-          }
-        }
-        if (read_size == 0) {
-          // Have READ the whole request.
+    if (kii_http->state == REQUEST_BODY_READ) {
+      kii_http->read_size = kii_http->read_callback(kii_http->read_buffer, 1, READ_BODY_SIZE, kii_http->read_data);
+      // TODO: handle read failure. let return signed value?
+      kii_http->state = REQUEST_BODY_SEND;
+      if (kii_http->read_size == 0) {
+        kii_http->read_request_end = 1;
+      }
+      continue;
+    }
+    if (kii_http->state == REQUEST_BODY_SEND) {
+      kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, kii_http->read_size);
+      if (send_res == KII_SOCKETC_OK) {
+        if (kii_http->read_request_end == 1) {
           kii_http->state = RESPONSE_HEADERS_ALLOC;
-          continue;
+        } else {
+          kii_http->state = REQUEST_BODY_READ;
         }
-      } else { // In case Non-Blocking socket requires resend the buffer.
-        kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, kii_http->read_size);
-        if (send_res == KII_SOCKETC_OK) {
-          kii_http->read_buffer_need_resend = 0;
-          continue;
-        }
-        if (send_res == KII_SOCKETC_AGAIN) {
-          kii_http->read_buffer_need_resend = 1;
-          continue;
-        }
-        if (send_res == KII_SOCKETC_FAIL) {
-          kii_http->state = CLOSE_AFTER_FAILURE;
-          kii_http->read_buffer_need_resend = 0;
-          continue;
-        }
+        continue;
+      }
+      if (send_res == KII_SOCKETC_AGAIN) {
+        continue;
+      }
+      if (send_res == KII_SOCKETC_FAIL) {
+        kii_http->state = CLOSE_AFTER_FAILURE;
+        continue;
       }
     }
     if (kii_http->state == RESPONSE_HEADERS_ALLOC) {
