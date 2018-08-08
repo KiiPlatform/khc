@@ -132,7 +132,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
     }
     if (kii_http->state == REQUEST_BODY) {
       if (kii_http->read_buffer_need_resend == 0) {
-        size_t read_size = kii_http->read_callback(kii_http->read_buffer, 1, 1024, kii_http->read_data);
+        size_t read_size = kii_http->read_callback(kii_http->read_buffer, 1, READ_BODY_SIZE, kii_http->read_data);
         if (read_size > 0) {
           kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, read_size);
           if (send_res == KII_SOCKETC_OK) {
