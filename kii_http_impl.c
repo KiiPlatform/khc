@@ -348,6 +348,7 @@ const KII_STATE_HANDLER state_handlers[] = {
   kii_state_request_line,
   kii_state_request_header,
   kii_state_request_header_send,
+  kii_state_request_header_send_crlf,
   kii_state_request_header_end,
   kii_state_request_body_read,
   kii_state_request_body_send,
