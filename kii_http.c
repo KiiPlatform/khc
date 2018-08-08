@@ -52,18 +52,13 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
   }
   memset(kii_http->read_buffer, '\0', READ_REQ_BUFFER_SIZE);
   kii_http->state = CONNECT;
-  kii_socket_context_t* s_ctx = NULL;
   kii_slist* curr = kii_http->reaquest_headers;
   kii_http->resp_header_buffer = NULL;
   kii_http->resp_header_buffer_size = 0;
   kii_http->read_end = 0;
   while(1) {
     if (kii_http->state == CONNECT) {
-      s_ctx = malloc(sizeof(kii_socket_context_t));
-      if (s_ctx == NULL) {
-        return KII_NG;
-      }
-      kii_socket_code_t con_res = kii_http->sc_connect_cb(s_ctx, kii_http->host, 8080);
+      kii_socket_code_t con_res = kii_http->sc_connect_cb(kii_http->socket_context, kii_http->host, 8080);
       if (con_res == KII_SOCKETC_OK) {
         kii_http->state = REQUEST_LINE;
         continue;
@@ -72,7 +67,6 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         continue;
       }
       if (con_res == KII_SOCKETC_FAIL) {
-        free(s_ctx);
         return KII_NG;
       }
     }
@@ -83,7 +77,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       strcat(request_line, " ");
       char http_version[] = "HTTP 1.0\r\n";
       strcat(request_line, http_version);
-      kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, request_line, strlen(request_line));
+      kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, request_line, strlen(request_line));
       if (send_res == KII_SOCKETC_OK) {
         kii_http->state = REQUEST_HEADERS;
         continue;
@@ -113,7 +107,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
           len = len + 2;
           line[len-1] = '\0';
         }
-        kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, line, len);
+        kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, len);
         free(line);
         if (send_res == KII_SOCKETC_OK) {
           curr = curr->next;
@@ -135,7 +129,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       if (kii_http->read_buffer_need_resend == 0) {
         size_t read_size = kii_http->read_callback(kii_http->read_buffer, 1, 1024, kii_http->read_data);
         if (read_size > 0) {
-          kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, kii_http->read_buffer, read_size);
+          kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, read_size);
           if (send_res == KII_SOCKETC_OK) {
             kii_http->read_buffer_need_resend = 0;
             continue;
@@ -162,7 +156,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
           continue;
         }
       } else { // In case Non-Blocking socket requires resend the buffer.
-        kii_socket_code_t send_res = kii_http->sc_send_cb(s_ctx, kii_http->read_buffer, kii_http->read_size);
+        kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, kii_http->read_size);
         if (send_res == KII_SOCKETC_OK) {
           kii_http->read_buffer_need_resend = 0;
           continue;
@@ -207,7 +201,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
     if (kii_http->state == RESPONSE_HEADERS_READ) {
       size_t read_size = 0;
       kii_socket_code_t read_res = 
-        kii_http->sc_recv_cb(s_ctx, kii_http->read_buffer, READ_RESP_HEADER_SIZE, &read_size);
+        kii_http->sc_recv_cb(kii_http->socket_context, kii_http->read_buffer, READ_RESP_HEADER_SIZE, &read_size);
       if (read_res == KII_SOCKETC_OK) {
         if (read_size == 0) {
           kii_http->read_end = 1;
@@ -291,7 +285,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
     if (kii_http->state == RESPONSE_BODY_READ) {
       size_t read_size = 0;
       kii_socket_code_t read_res = 
-        kii_http->sc_recv_cb(s_ctx, kii_http->body_buffer, READ_BODY_SIZE, &read_size);
+        kii_http->sc_recv_cb(kii_http->socket_context, kii_http->body_buffer, READ_BODY_SIZE, &read_size);
       if (read_res == KII_SOCKETC_OK) {
         if (read_size < READ_BODY_SIZE) {
           kii_http->read_end = 1;
@@ -322,9 +316,8 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       }
     }
     if (kii_http->state == CLOSE) {
-      kii_socket_code_t close_res = kii_http->sc_close_cb(s_ctx);
+      kii_socket_code_t close_res = kii_http->sc_close_cb(kii_http->socket_context);
       if (close_res == KII_SOCKETC_OK) {
-        free(s_ctx);
         kii_http->state = IDLE;
         return KII_OK;
       }
@@ -332,15 +325,13 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         continue;
       }
       if (close_res == KII_SOCKETC_FAIL) {
-        free(s_ctx);
         kii_http->state = IDLE;
         return KII_NG;
       }
     }
     if (kii_http->state == CLOSE_AFTER_FAILURE) {
-      kii_socket_code_t close_res = kii_http->sc_close_cb(s_ctx);
+      kii_socket_code_t close_res = kii_http->sc_close_cb(kii_http->socket_context);
       if (close_res == KII_SOCKETC_OK) {
-        free(s_ctx);
         kii_http->state = IDLE;
         return KII_OK;
       }
@@ -348,7 +339,6 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         continue;
       }
       if (close_res == KII_SOCKETC_FAIL) {
-        free(s_ctx);
         kii_http->state = IDLE;
         return KII_NG;
       }

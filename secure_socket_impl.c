@@ -23,11 +23,11 @@ typedef struct _ssl_context
 {
     SSL *ssl;
     SSL_CTX *ssl_ctx;
-
+    int socket;
 } ssl_context_t;
 
 kii_socket_code_t
-    s_connect_cb(kii_socket_context_t* socket_context, const char* host,
+    s_connect_cb(void* socket_context, const char* host,
             unsigned int port)
 {
     int sock, ret;
@@ -98,19 +98,19 @@ kii_socket_code_t
         free(ctx);
         return KII_SOCKETC_FAIL;
     }
-    socket_context->socket = sock;
-    socket_context->app_context = (void*)ctx;
+
+    ctx->socket = sock;
     ctx->ssl = ssl;
     ctx->ssl_ctx = ssl_ctx;
     return KII_SOCKETC_OK;
 }
 
 kii_socket_code_t
-    s_send_cb(kii_socket_context_t* socket_context,
+    s_send_cb(void* socket_context,
             const char* buffer,
             size_t length)
 {
-    ssl_context_t* ctx = (ssl_context_t*)socket_context->app_context;
+    ssl_context_t* ctx = (ssl_context_t*)socket_context;
     int ret = SSL_write(ctx->ssl, buffer, length);
     if (ret > 0) {
         return KII_SOCKETC_OK;
@@ -121,12 +121,12 @@ kii_socket_code_t
 }
 
 kii_socket_code_t
-    s_recv_cb(kii_socket_context_t* socket_context,
+    s_recv_cb(void* socket_context,
             char* buffer,
             size_t length_to_read,
             size_t* out_actual_length)
 {
-    ssl_context_t* ctx = (ssl_context_t*)socket_context->app_context;
+    ssl_context_t* ctx = (ssl_context_t*)socket_context;
     int ret = SSL_read(ctx->ssl, buffer, length_to_read);
     if (ret > 0) {
         *out_actual_length = ret;
@@ -140,9 +140,9 @@ kii_socket_code_t
 }
 
 kii_socket_code_t
-    s_close_cb(kii_socket_context_t* socket_context)
+    s_close_cb(void* socket_context)
 {
-    ssl_context_t* ctx = (ssl_context_t*)socket_context->app_context;
+    ssl_context_t* ctx = (ssl_context_t*)socket_context;
     int ret = SSL_shutdown(ctx->ssl);
     if (ret != 1) {
         int sslErr = SSL_get_error(ctx->ssl, ret);
@@ -156,7 +156,7 @@ kii_socket_code_t
             printf("failed to shutdown: %s\n", sslErrStr);
         }
     }
-    close(socket_context->socket);
+    close(ctx->socket);
     SSL_free(ctx->ssl);
     SSL_CTX_free(ctx->ssl_ctx);
     if (ret != 1) {
@@ -164,7 +164,6 @@ kii_socket_code_t
         return KII_SOCKETC_FAIL;
     }
     free(ctx);
-    socket_context->app_context = NULL;
     return KII_SOCKETC_OK;
 }
 

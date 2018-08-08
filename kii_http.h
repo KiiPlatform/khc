@@ -46,6 +46,8 @@ typedef struct kii_http {
   KII_SOCKET_SEND_CB sc_send_cb;
   KII_SOCKET_RECV_CB sc_recv_cb;
   KII_SOCKET_CLOSE_CB sc_close_cb;
+  /** Socket context. */
+  void* socket_context;
 
   /** Request body buffer stream */
   char read_buffer[READ_REQ_BUFFER_SIZE];

@@ -7,32 +7,6 @@
 extern "C" {
 #endif
 
-typedef enum kii_http_error_t {
-    /** No error. */
-    KII_HTTP_ERROR_NONE,
-    /** Invalid response. */
-    KII_HTTP_ERROR_INVALID_RESPONSE,
-    /** Response buffer overflow. */
-    KII_HTTP_ERROR_INSUFFICIENT_BUFFER,
-    /** Socket functions returns false. */
-    KII_HTTP_ERROR_SOCKET
-} kii_http_error_t;
-
-typedef struct kii_socket_context_t {
-    /** Application specific context object.
-     * Used by socket callback implementations.
-     */
-    void* app_context;
-
-    /** Application specific socket.
-     * Used by socket callback implementations.
-     */
-    int socket;
-
-    /** HTTP client error. */
-    kii_http_error_t http_error;
-} kii_socket_context_t;
-
 typedef enum kii_socket_code_t {
     /** Retrun this code when operation succeed. */
     KII_SOCKETC_OK,
@@ -61,7 +35,7 @@ typedef enum kii_socket_code_t {
  */
 typedef kii_socket_code_t
     (*KII_SOCKET_CONNECT_CB)
-    (kii_socket_context_t* socket_context, const char* host, unsigned int port);
+    (void* socket_context, const char* host, unsigned int port);
 
 /** Callback for sending data to server.
  * Applications must implement this callback in the target enviroment.
@@ -78,7 +52,7 @@ typedef kii_socket_code_t
  */
 typedef kii_socket_code_t
     (*KII_SOCKET_SEND_CB)
-    (kii_socket_context_t* socket_context, const char* buffer, size_t length);
+    (void* socket_context, const char* buffer, size_t length);
 
 /** Callback for receiving data from server.
  * Applications must implement this callback in the target enviroment.
@@ -97,7 +71,7 @@ typedef kii_socket_code_t
  */
 typedef kii_socket_code_t
     (*KII_SOCKET_RECV_CB)
-    (kii_socket_context_t* socket_context, char* buffer, size_t length_to_read,
+    (void* socket_context, char* buffer, size_t length_to_read,
      size_t* out_actual_length);
 
 /** Callback for closing socket.
@@ -112,7 +86,7 @@ typedef kii_socket_code_t
  * KII_SOCKETC_AGAIN.
  */
 typedef kii_socket_code_t
-    (*KII_SOCKET_CLOSE_CB)(kii_socket_context_t* socket_context);
+    (*KII_SOCKET_CLOSE_CB)(void* socket_context);
 
 
 #ifdef __cplusplus
