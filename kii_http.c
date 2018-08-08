@@ -321,8 +321,39 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
         continue;
       }
     }
+    if (kii_http->state == CLOSE) {
+      kii_socket_code_t close_res = kii_http->sc_close_cb(s_ctx);
+      if (close_res == KII_SOCKETC_OK) {
+        free(s_ctx);
+        kii_http->state = IDLE;
+        return KII_OK;
+      }
+      if (close_res == KII_SOCKETC_AGAIN) {
+        continue;
+      }
+      if (close_res == KII_SOCKETC_FAIL) {
+        free(s_ctx);
+        kii_http->state = IDLE;
+        return KII_NG;
+      }
+    }
+    if (kii_http->state == CLOSE_AFTER_FAILURE) {
+      kii_socket_code_t close_res = kii_http->sc_close_cb(s_ctx);
+      if (close_res == KII_SOCKETC_OK) {
+        free(s_ctx);
+        kii_http->state = IDLE;
+        return KII_OK;
+      }
+      if (close_res == KII_SOCKETC_AGAIN) {
+        continue;
+      }
+      if (close_res == KII_SOCKETC_FAIL) {
+        free(s_ctx);
+        kii_http->state = IDLE;
+        return KII_NG;
+      }
+    }
   }
-
 
   return KII_NG;
 }
