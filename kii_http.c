@@ -95,9 +95,6 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
       while(curr != NULL) {
         size_t len = strlen(curr->data);
         char line[len+5];
-        if (line == NULL) {
-          kii_http->state = CLOSE_AFTER_FAILURE;
-        }
         line[0] = '\0';
         strcat(line, curr->data);
         strcat(line, "\r\n");
