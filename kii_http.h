@@ -1,10 +1,13 @@
-#include <stdio.h>
-#include "kii_socket_callback.h"
+#ifndef __kii_http
+#define __kii_http
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+#include <stdio.h>
+#include "kii_socket_callback.h"
 
 typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t nmemb, void *userdata);
 typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t nitems, void *instream);
@@ -29,6 +32,7 @@ typedef enum kii_http_state {
   REQUEST_LINE,
   REQUEST_HEADER,
   REQUEST_HEADER_SEND,
+  REQUEST_HEADER_SEND_CRLF,
   REQUEST_HEADER_END,
   REQUEST_BODY_READ,
   REQUEST_BODY_SEND,
@@ -41,12 +45,18 @@ typedef enum kii_http_state {
   RESPONSE_BODY_READ,
   RESPONSE_BODY_CALLBACK,
   CLOSE,
-  CLOSE_AFTER_FAILURE,
+  FINISHED,
 } kii_http_state;
 
 typedef enum kii_http_code {
-  // TODO: Add codes.
   KII_OK,
+  KIIE_SC_CONNECT,
+  KIIE_SC_CLOSE,
+  KIIE_SC_SEND,
+  KIIE_SC_RECV,
+  KIIE_HEADER_CALLBACK,
+  KIIE_WRITE_CALLBACK,
+  KIIE_ALLOCATION,
   KII_NG
 } kii_http_code;
 
@@ -77,7 +87,6 @@ typedef struct kii_http {
   void* socket_context;
 
   kii_slist* current_request_header;
-  char* header_to_send;
 
   /** Request body buffer stream */
   char read_buffer[READ_REQ_BUFFER_SIZE];
@@ -86,14 +95,16 @@ typedef struct kii_http {
 
   /** Response header buffer (Dynamic allocation) */
   char* resp_header_buffer;
+  char* resp_header_buffer_current_pos;
   size_t resp_header_buffer_size;
 
-  /** Pointer to the \r\n\r\n boundary in the resp_header_buffer */
+  /** Pointer to the double CRLF boundary in the resp_header_buffer */
   char* body_boundary;
 
   /** Header callback */
-  char* current_header;
-  size_t remaining_header_buffer_size;
+  char* cb_header_pos;
+  /** Used to seek for CRFL effectively. */
+  size_t cb_header_remaining_size;
 
   char* body_flagment;
   size_t body_flagment_size;
@@ -102,6 +113,7 @@ typedef struct kii_http {
   char body_buffer[READ_BODY_SIZE];
   size_t body_read_size;
 
+  kii_http_code result;
 } kii_http;
 
 kii_http_code kii_http_perform(kii_http* kii_http);
@@ -109,3 +121,5 @@ kii_http_code kii_http_perform(kii_http* kii_http);
 #ifdef __cplusplus
 }
 #endif
+
+#endif //__kii_http
