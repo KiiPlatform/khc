@@ -99,14 +99,15 @@ typedef struct kii_http {
 
   /** Response header buffer (Dynamic allocation) */
   char* resp_header_buffer;
+  char* resp_header_buffer_current_pos;
   size_t resp_header_buffer_size;
 
   /** Pointer to the \r\n\r\n boundary in the resp_header_buffer */
   char* body_boundary;
 
   /** Header callback */
-  char* current_header;
-  size_t remaining_header_buffer_size;
+  char* cb_header_pos;
+  size_t cb_header_remaining_size;
 
   char* body_flagment;
   size_t body_flagment_size;

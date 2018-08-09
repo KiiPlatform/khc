@@ -169,6 +169,7 @@ void kii_state_response_headers_alloc(kii_http* kii_http) {
     return;
   }
   kii_http->resp_header_buffer_size = READ_RESP_HEADER_SIZE;
+  kii_http->resp_header_buffer_current_pos = kii_http->resp_header_buffer;
   kii_http->state = RESPONSE_HEADERS_READ;
   return;
 }
@@ -184,7 +185,8 @@ void kii_state_response_headers_realloc(kii_http* kii_http) {
     return;
   }
   // Pointer: last part newly allocated.
-  kii_http->resp_header_buffer = newBuff + kii_http->resp_header_buffer_size;
+  kii_http->resp_header_buffer = newBuff;
+  kii_http->resp_header_buffer_current_pos = newBuff + kii_http->resp_header_buffer_size;
   kii_http->resp_header_buffer_size = kii_http->resp_header_buffer_size + READ_RESP_HEADER_SIZE;
   kii_http->state = RESPONSE_HEADERS_READ;
   return;
@@ -193,14 +195,13 @@ void kii_state_response_headers_realloc(kii_http* kii_http) {
 void kii_state_response_headers_read(kii_http* kii_http) {
   size_t read_size = 0;
   kii_socket_code_t read_res = 
-    kii_http->sc_recv_cb(kii_http->socket_context, kii_http->read_buffer, READ_RESP_HEADER_SIZE, &read_size);
+    kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, READ_RESP_HEADER_SIZE, &read_size);
   if (read_res == KII_SOCKETC_OK) {
     if (read_size == 0) {
       kii_http->read_end = 1;
     }
-    char* start = kii_http->resp_header_buffer + READ_RESP_HEADER_SIZE - kii_http->resp_header_buffer_size;
     // Search boundary for whole buffer.
-    char* boundary = strnstr(start, "\r\n\r\n", kii_http->resp_header_buffer_size);
+    char* boundary = strnstr(kii_http->resp_header_buffer, "\r\n\r\n", kii_http->resp_header_buffer_size);
     if (boundary == NULL) {
       // Not reached to end of headers.
       kii_http->state = RESPONSE_HEADERS_REALLOC;
@@ -208,9 +209,8 @@ void kii_state_response_headers_read(kii_http* kii_http) {
     } else {
       kii_http->body_boundary = boundary;
       kii_http->state = RESPONSE_HEADERS_CALLBACK;
-      kii_http->resp_header_buffer = start;
-      kii_http->current_header = start;
-      kii_http->remaining_header_buffer_size = kii_http->resp_header_buffer_size;
+      kii_http->cb_header_remaining_size = kii_http->resp_header_buffer_size;
+      kii_http->cb_header_pos = kii_http->resp_header_buffer;
       return;
     }
   }
@@ -229,10 +229,10 @@ void kii_state_response_headers_read(kii_http* kii_http) {
 }
 
 void kii_state_response_headers_callback(kii_http* kii_http) {
-  char* header_boundary = strnstr(kii_http->current_header, "\r\n", kii_http->remaining_header_buffer_size);
-  size_t header_size = header_boundary - kii_http->current_header;
+  char* header_boundary = strnstr(kii_http->cb_header_pos, "\r\n", kii_http->cb_header_remaining_size);
+  size_t header_size = header_boundary - kii_http->cb_header_pos;
   size_t header_written = 
-    kii_http->header_callback(kii_http->current_header, 1, header_size, kii_http->header_data);
+    kii_http->header_callback(kii_http->cb_header_pos, 1, header_size, kii_http->header_data);
   if (header_written != header_size) { // Error in callback function.
     kii_http->state = CLOSE;
     kii_http->result = KIIE_HEADER_CALLBACK;
@@ -242,12 +242,12 @@ void kii_state_response_headers_callback(kii_http* kii_http) {
     return;
   }
   if (header_boundary < kii_http->body_boundary) {
-    kii_http->current_header = header_boundary + 2;
-    kii_http->remaining_header_buffer_size = kii_http->remaining_header_buffer_size - header_size - 2;
+    kii_http->cb_header_pos = header_boundary + 2; // +2 : Skip CRLF
+    kii_http->cb_header_remaining_size = kii_http->cb_header_remaining_size - header_size - 2;
     return;
   } else { // Callback called for all headers.
     // Check if body is included in the buffer.
-    size_t body_size = kii_http->remaining_header_buffer_size - (kii_http->body_boundary + 4 - kii_http->current_header);
+    size_t body_size = kii_http->cb_header_remaining_size - 4;
     if (body_size > 0) {
       kii_http->body_flagment = kii_http->body_boundary + 4;
       kii_http->body_flagment_size = body_size;
