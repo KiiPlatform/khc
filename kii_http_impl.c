@@ -30,7 +30,7 @@ void kii_state_connect(kii_http* kii_http) {
     return;
   }
   if (con_res == KII_SOCKETC_FAIL) {
-    kii_http->result = KIIE_CONNECT;
+    kii_http->result = KIIE_SC_CONNECT;
     kii_http->state = FINISHED;
     return;
   }
@@ -76,7 +76,7 @@ void kii_state_request_line(kii_http* kii_http) {
   }
   if (send_res == KII_SOCKETC_FAIL) {
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_SEND_REQUEST_LINE;
+    kii_http->result = KIIE_SC_SEND;
     return;
   } 
 }
@@ -114,7 +114,7 @@ void kii_state_request_header_send(kii_http* kii_http) {
   }
   if (send_res == KII_SOCKETC_FAIL) {
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_SEND_REQUEST_HEADER;
+    kii_http->result = KIIE_SC_SEND;
     return;
   } 
 }
@@ -131,7 +131,7 @@ void kii_state_request_header_send_crlf(kii_http* kii_http) {
   }
   if (send_res == KII_SOCKETC_FAIL) {
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_SEND_REQUEST_HEADER;
+    kii_http->result = KIIE_SC_SEND;
     return;
   } 
 }
@@ -148,7 +148,7 @@ void kii_state_request_header_end(kii_http* kii_http) {
   }
   if (send_res == KII_SOCKETC_FAIL) {
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_SEND_REQUEST_HEADER;
+    kii_http->result = KIIE_SC_SEND;
     return;
   }
 }
@@ -178,7 +178,7 @@ void kii_state_request_body_send(kii_http* kii_http) {
   }
   if (send_res == KII_SOCKETC_FAIL) {
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_SEND_REQUEST_BODY;
+    kii_http->result = KIIE_SC_SEND;
     return;
   }
 }
@@ -245,7 +245,7 @@ void kii_state_response_headers_read(kii_http* kii_http) {
     kii_http->resp_header_buffer = NULL;
     kii_http->resp_header_buffer_size = 0;
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_READ_HEADER;
+    kii_http->result = KIIE_SC_RECV;
     return;
   }
 }
@@ -327,7 +327,7 @@ void kii_state_response_body_read(kii_http* kii_http) {
   }
   if (read_res == KII_SOCKETC_FAIL) {
     kii_http->state = CLOSE;
-    kii_http->result = KIIE_READ_BODY;
+    kii_http->result = KIIE_SC_RECV;
     return;
   }
 }
@@ -359,7 +359,7 @@ void kii_state_close(kii_http* kii_http) {
   }
   if (close_res == KII_SOCKETC_FAIL) {
     kii_http->state = FINISHED;
-    kii_http->result = KIIE_CLOSE;
+    kii_http->result = KIIE_SC_CLOSE;
     return;
   }
 }
