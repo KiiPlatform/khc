@@ -9,9 +9,9 @@ extern "C"
 #include <stdio.h>
 #include "kii_socket_callback.h"
 
-typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t nmemb, void *userdata);
-typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t nitems, void *instream);
-typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t nitems, void *userdata);
+typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t count, void *userdata);
+typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t count, void *userdata);
 
 typedef struct kii_slist {
   char* data;
