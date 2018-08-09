@@ -351,7 +351,7 @@ void kii_state_close(kii_http* kii_http) {
   kii_socket_code_t close_res = kii_http->sc_close_cb(kii_http->socket_context);
   if (close_res == KII_SOCKETC_OK) {
     kii_http->state = FINISHED;
-    kii_http->result = KII_OK;
+    kii_http->result = KIIE_OK;
     return;
   }
   if (close_res == KII_SOCKETC_AGAIN) {

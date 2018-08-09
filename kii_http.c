@@ -37,7 +37,7 @@ kii_http_code kii_http_perform(kii_http* kii_http) {
   }
   kii_http_code res = kii_http->result;
   kii_http->state = IDLE;
-  kii_http->result = KII_OK;
+  kii_http->result = KIIE_OK;
   
   return res;
 }

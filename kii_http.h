@@ -49,7 +49,7 @@ typedef enum kii_http_state {
 } kii_http_state;
 
 typedef enum kii_http_code {
-  KII_OK,
+  KIIE_OK,
   KIIE_SC_CONNECT,
   KIIE_SC_CLOSE,
   KIIE_SC_SEND,
@@ -57,7 +57,7 @@ typedef enum kii_http_code {
   KIIE_HEADER_CALLBACK,
   KIIE_WRITE_CALLBACK,
   KIIE_ALLOCATION,
-  KII_NG
+  KIIE_FAIL,
 } kii_http_code;
 
 typedef struct kii_http {
