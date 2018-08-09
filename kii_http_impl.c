@@ -52,13 +52,8 @@ static size_t request_line_len(kii_http* kii_http) {
 }
 
 void kii_state_request_line(kii_http* kii_http) {
-  char request_line[REQ_LINE_BUFFER_SIZE];
   size_t len = request_line_len(kii_http);
-  if (len > REQ_LINE_BUFFER_SIZE - 1) {
-    kii_http->state = CLOSE;
-    kii_http->result = KIIE_INSUFFICIENT_BUFFER;
-    return;
-  }
+  char request_line[len+1];
   char* host = kii_http->host;
   char* path = kii_http->path;
 

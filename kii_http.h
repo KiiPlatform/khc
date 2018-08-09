@@ -25,7 +25,6 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_REQ_BUFFER_SIZE 1024
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
-#define REQ_LINE_BUFFER_SIZE 256
 
 typedef enum kii_http_state {
   IDLE,
@@ -62,7 +61,6 @@ typedef enum kii_http_code {
   KIIE_HEADER_CALLBACK,
   KIIE_WRITE_CALLBACK,
   KIIE_ALLOCATION,
-  KIIE_INSUFFICIENT_BUFFER,
   KII_NG
 } kii_http_code;
 
