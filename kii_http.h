@@ -102,11 +102,12 @@ typedef struct kii_http {
   char* resp_header_buffer_current_pos;
   size_t resp_header_buffer_size;
 
-  /** Pointer to the \r\n\r\n boundary in the resp_header_buffer */
+  /** Pointer to the double CRLF boundary in the resp_header_buffer */
   char* body_boundary;
 
   /** Header callback */
   char* cb_header_pos;
+  /** Used to seek for CRFL effectively. */
   size_t cb_header_remaining_size;
 
   char* body_flagment;
