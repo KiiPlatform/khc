@@ -36,12 +36,39 @@ void kii_state_connect(kii_http* kii_http) {
   }
 }
 
+static const char schema[] = "https://";
+static const char http_version[] = "HTTP 1.0\r\n";
+
+static size_t request_line_len(kii_http* kii_http) {
+  char* method = kii_http->method;
+  char* host = kii_http->host;
+  char* path = kii_http->path;
+
+  return ( // example)GET https://api.kii.com/v1/users HTTP1.0\r\n
+    strlen(method) + 1
+    + strlen(schema) + strlen(host) + strlen(path) + 1
+    + strlen(http_version)
+  );
+}
+
 void kii_state_request_line(kii_http* kii_http) {
-  char request_line[64];
+  char request_line[REQ_LINE_BUFFER_SIZE];
+  size_t len = request_line_len(kii_http);
+  if (len > REQ_LINE_BUFFER_SIZE - 1) {
+    kii_http->state = CLOSE;
+    kii_http->result = KIIE_INSUFFICIENT_BUFFER;
+    return;
+  }
+  char* host = kii_http->host;
+  char* path = kii_http->path;
+
   request_line[0] = '\0';
   strcat(request_line, kii_http->method);
   strcat(request_line, " ");
-  char http_version[] = "HTTP 1.0\r\n";
+  strcat(request_line, schema);
+  strcat(request_line, host);
+  strcat(request_line, path);
+  strcat(request_line, " ");
   strcat(request_line, http_version);
   kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, request_line, strlen(request_line));
   if (send_res == KII_SOCKETC_OK) {
