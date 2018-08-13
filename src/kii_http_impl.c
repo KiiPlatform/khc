@@ -42,6 +42,7 @@ static const char http_version[] = "HTTP 1.0\r\n";
 static size_t request_line_len(kii_http* kii_http) {
   char* method = kii_http->method;
   char* host = kii_http->host;
+  // Path must be started with '/'
   char* path = kii_http->path;
 
   return ( // example)GET https://api.kii.com/v1/users HTTP1.0\r\n
@@ -105,7 +106,6 @@ void kii_state_request_header_send(kii_http* kii_http) {
   char* line = kii_http->current_request_header->data;
   kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, strlen(line));
   if (send_res == KII_SOCKETC_OK) {
-    kii_http->current_request_header = kii_http->current_request_header->next;
     kii_http->state = REQUEST_HEADER_SEND_CRLF;
     return;
   }
