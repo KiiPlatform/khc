@@ -9,7 +9,12 @@
 typedef struct sock_ctx {
   std::function<kii_socket_code_t(void* socket_context, const char* host, unsigned int port)> on_connect;
   std::function<kii_socket_code_t(void* socket_context, const char* buffer, size_t length)> on_send;
+  std::function<kii_socket_code_t(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length)> on_recv;
 } sock_ctx;
+
+typedef struct io_ctx {
+  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_read;
+} io_ctx;
 
 kii_socket_code_t cb_connect(void* socket_context, const char* host, unsigned int port) {
   sock_ctx* ctx = (sock_ctx*)socket_context;
@@ -34,8 +39,10 @@ size_t cb_write(char *ptr, size_t size, size_t count, void *userdata) {
 }
 
 size_t cb_read(char *buffer, size_t size, size_t count, void *userdata) {
-  return 0;
+  io_ctx* ctx = (io_ctx*)(userdata);
+  return ctx->on_read(buffer, size, count, userdata);
 }
+
 size_t cb_header (char *buffer, size_t size, size_t count, void *userdata) {
   return 0;
 }
@@ -64,7 +71,11 @@ TEST_CASE( "Http Test" ) {
   
   http.read_callback = cb_read;
   http.write_callback = cb_write;
-  http.header_callback = cb_header;  
+  http.header_callback = cb_header;
+  io_ctx io_ctx;
+  http.read_data = &io_ctx;
+  http.write_data = &io_ctx;
+  http.header_data = &io_ctx;
   
   kii_state_idle(&http);
   REQUIRE( http.state == CONNECT );
@@ -98,4 +109,22 @@ TEST_CASE( "Http Test" ) {
   kii_state_request_header_end(&http);
   REQUIRE( http.state == REQUEST_BODY_READ );
   REQUIRE( http.result == KIIE_OK );
+
+  io_ctx.on_read = [=](char *buffer, size_t size, size_t count, void *userdata) {
+    REQUIRE( size == 1);
+    REQUIRE( count == 1024);
+    const char body[] = "http body";
+    buffer = (char*) body;
+    return strlen(body);
+  };
+  kii_state_request_body_read(&http);
+  REQUIRE( http.state == REQUEST_BODY_SEND );
+  REQUIRE( http.result == KIIE_OK );
+
+  // s_ctx.on_recv = [=](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+  //   REQUIRE( length_to_read == 1024 );
+  //   buffer = "http body";
+  //   *out_actual_length = strlen("http body");
+  //   return KII_SOCKETC_OK;
+  // };
 }
