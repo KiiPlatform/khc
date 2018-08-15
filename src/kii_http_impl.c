@@ -17,6 +17,8 @@ void kii_state_idle(kii_http* kii_http) {
   kii_http->state = CONNECT;
   kii_http->resp_header_buffer_size = 0;
   kii_http->read_end = 0;
+  kii_http->read_size = 0;
+  kii_http->resp_header_read_size = 0;
   kii_http->result = KIIE_OK;
   return;
 }
@@ -221,6 +223,7 @@ void kii_state_response_headers_read(kii_http* kii_http) {
   kii_socket_code_t read_res = 
     kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, READ_RESP_HEADER_SIZE, &read_size);
   if (read_res == KII_SOCKETC_OK) {
+    kii_http->resp_header_read_size += read_size;
     if (read_size < READ_RESP_HEADER_SIZE) {
       kii_http->read_end = 1;
     }
@@ -271,7 +274,8 @@ void kii_state_response_headers_callback(kii_http* kii_http) {
     return;
   } else { // Callback called for all headers.
     // Check if body is included in the buffer.
-    size_t body_size = kii_http->cb_header_remaining_size - 4;
+    size_t header_size = kii_http->body_boundary - kii_http->resp_header_buffer;
+    size_t body_size = kii_http->resp_header_read_size - header_size - 4;
     if (body_size > 0) {
       kii_http->body_flagment = kii_http->body_boundary + 4;
       kii_http->body_flagment_size = body_size;
