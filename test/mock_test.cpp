@@ -54,7 +54,7 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
   return ctx->on_header(buffer, size, count, userdata);
 }
 
-TEST_CASE( "Http Test" ) {
+TEST_CASE( "HTTP minimal" ) {
   kii_http http;
   http.host = (char*)"api.kii.com";
   http.method = (char*)"GET";
@@ -198,4 +198,13 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.result == KIIE_OK );
   REQUIRE( called );
 
+  called = false;
+  s_ctx.on_close = [=, &called](void* socket_ctx) {
+    called = true;
+    return KII_SOCKETC_OK;
+  };
+  kii_state_close(&http);
+  REQUIRE( http.state == FINISHED );
+  REQUIRE( http.result == KIIE_OK );
+  REQUIRE( called );
 }
