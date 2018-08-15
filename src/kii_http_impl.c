@@ -17,6 +17,7 @@ void kii_state_idle(kii_http* kii_http) {
   kii_http->state = CONNECT;
   kii_http->resp_header_buffer_size = 0;
   kii_http->read_end = 0;
+  kii_http->result = KIIE_OK;
   return;
 }
 

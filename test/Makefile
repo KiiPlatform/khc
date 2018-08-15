@@ -5,7 +5,7 @@ LIBS=-lkiihttp
 all: clean $(TARGET)
 
 $(TARGET):
-	g++ mock_test.cpp $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
+	g++ -g mock_test.cpp $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
 
 test: $(TARGET)
 	$(TARGET) -r junit -o unit-test.xml
