@@ -158,7 +158,7 @@ void kii_state_request_body_read(kii_http* kii_http) {
   kii_http->read_size = kii_http->read_callback(kii_http->read_buffer, 1, READ_BODY_SIZE, kii_http->read_data);
   // TODO: handle read failure. let return signed value?
   kii_http->state = REQUEST_BODY_SEND;
-  if (kii_http->read_size == 0) {
+  if (kii_http->read_size < READ_BODY_SIZE) {
     kii_http->read_request_end = 1;
   }
   return;

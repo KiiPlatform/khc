@@ -114,11 +114,22 @@ TEST_CASE( "Http Test" ) {
     REQUIRE( size == 1);
     REQUIRE( count == 1024);
     const char body[] = "http body";
-    buffer = (char*) body;
+    strncpy(buffer, body, strlen(body));
     return strlen(body);
   };
   kii_state_request_body_read(&http);
   REQUIRE( http.state == REQUEST_BODY_SEND );
+  REQUIRE( http.result == KIIE_OK );
+  REQUIRE( http.read_request_end == 1 );
+
+  s_ctx.on_send = [=](void* socket_context, const char* buffer, size_t length) {
+    const char body[] = "http body";
+    REQUIRE( length == strlen(body) );
+    REQUIRE( strncmp(buffer, body, length) == 0 );
+    return KII_SOCKETC_OK;
+  };
+  kii_state_request_body_send(&http);
+  REQUIRE( http.state == RESPONSE_HEADERS_ALLOC );
   REQUIRE( http.result == KIIE_OK );
 
   // s_ctx.on_recv = [=](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
