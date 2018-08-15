@@ -45,6 +45,8 @@ TEST_CASE( "Http Test" ) {
   http.host = (char*)"api.kii.com";
   http.method = (char*)"GET";
   http.path = (char*)"/api/apps";
+  http.reaquest_headers = NULL;
+
   http.sc_connect_cb = cb_connect;
   http.sc_send_cb = cb_send;
   http.sc_recv_cb = cb_recv;
@@ -85,5 +87,15 @@ TEST_CASE( "Http Test" ) {
 
   kii_state_request_header(&http);
   REQUIRE( http.state == REQUEST_HEADER_END );
+  REQUIRE( http.result == KIIE_OK );
+
+  s_ctx.on_send = [=](void* socket_context, const char* buffer, size_t length) {
+    REQUIRE( length == 2 );
+    REQUIRE( strncmp(buffer, "\r\n", 2) == 0 );
+    return KII_SOCKETC_OK;
+  };
+
+  kii_state_request_header_end(&http);
+  REQUIRE( http.state == REQUEST_BODY_READ );
   REQUIRE( http.result == KIIE_OK );
 }
