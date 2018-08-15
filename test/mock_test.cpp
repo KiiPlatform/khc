@@ -14,6 +14,8 @@ typedef struct sock_ctx {
 
 typedef struct io_ctx {
   std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_read;
+  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_header;
+  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_write;
 } io_ctx;
 
 kii_socket_code_t cb_connect(void* socket_context, const char* host, unsigned int port) {
@@ -35,8 +37,9 @@ kii_socket_code_t cb_close(void* socket_context) {
   return KII_SOCKETC_OK;
 }
 
-size_t cb_write(char *ptr, size_t size, size_t count, void *userdata) {
-  return 0;
+size_t cb_write(char *buffer, size_t size, size_t count, void *userdata) {
+  io_ctx* ctx = (io_ctx*)(userdata);
+  return ctx->on_write(buffer, size, count, userdata);
 }
 
 size_t cb_read(char *buffer, size_t size, size_t count, void *userdata) {
@@ -44,8 +47,9 @@ size_t cb_read(char *buffer, size_t size, size_t count, void *userdata) {
   return ctx->on_read(buffer, size, count, userdata);
 }
 
-size_t cb_header (char *buffer, size_t size, size_t count, void *userdata) {
-  return 0;
+size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
+  io_ctx* ctx = (io_ctx*)(userdata);
+  return ctx->on_header(buffer, size, count, userdata);
 }
 
 TEST_CASE( "Http Test" ) {
@@ -150,8 +154,21 @@ TEST_CASE( "Http Test" ) {
   };
 
   kii_state_response_headers_read(&http);
-  printf("buff: %s", http.resp_header_buffer);
   REQUIRE( http.state == RESPONSE_HEADERS_CALLBACK );
+  REQUIRE( http.read_end == 1 );
+  REQUIRE( http.result == KIIE_OK );
+
+  io_ctx.on_header = [=](char *buffer, size_t size, size_t count, void *userdata) {
+    const char status_line[] = "HTTP 1.0 200 OK";
+    size_t len = strlen(status_line);
+    REQUIRE( size == 1);
+    REQUIRE( count == len );
+    REQUIRE( strncmp(buffer, status_line, len) == 0 );
+    return size * count;
+  };
+
+  kii_state_response_headers_callback(&http);
+  REQUIRE( http.state == CLOSE );
   REQUIRE( http.read_end == 1 );
   REQUIRE( http.result == KIIE_OK );
 
