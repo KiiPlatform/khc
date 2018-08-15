@@ -157,6 +157,9 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.state == RESPONSE_HEADERS_CALLBACK );
   REQUIRE( http.read_end == 1 );
   REQUIRE( http.result == KIIE_OK );
+  // FIXME: Multiple Declaration.
+  const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
+  REQUIRE( http.resp_header_read_size == strlen(status_line) );
 
   io_ctx.on_header = [=](char *buffer, size_t size, size_t count, void *userdata) {
     const char status_line[] = "HTTP 1.0 200 OK";
