@@ -1,10 +1,11 @@
 
 TARGET=./testapp
-INCLUDES=-I. -I../
+INCLUDES=-I.
+LIBS=-lkiihttp
 all: clean $(TARGET)
 
 $(TARGET):
-	g++ slist_test.cpp ../kii_http.c $(INCLUDES) -o $(TARGET) -std=c++11
+	g++ slist_test.cpp $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
 
 test: $(TARGET)
 	$(TARGET) -r junit -o unit-test.xml

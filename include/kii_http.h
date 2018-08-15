@@ -9,9 +9,9 @@ extern "C"
 #include <stdio.h>
 #include "kii_socket_callback.h"
 
-typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t nmemb, void *userdata);
-typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t nitems, void *instream);
-typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t nitems, void *userdata);
+typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t count, void *userdata);
+typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t count, void *userdata);
 
 typedef struct kii_slist {
   char* data;
@@ -49,7 +49,7 @@ typedef enum kii_http_state {
 } kii_http_state;
 
 typedef enum kii_http_code {
-  KII_OK,
+  KIIE_OK,
   KIIE_SC_CONNECT,
   KIIE_SC_CLOSE,
   KIIE_SC_SEND,
@@ -57,7 +57,7 @@ typedef enum kii_http_code {
   KIIE_HEADER_CALLBACK,
   KIIE_WRITE_CALLBACK,
   KIIE_ALLOCATION,
-  KII_NG
+  KIIE_FAIL,
 } kii_http_code;
 
 typedef struct kii_http {
