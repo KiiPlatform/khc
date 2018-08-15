@@ -10,6 +10,7 @@ typedef struct sock_ctx {
   std::function<kii_socket_code_t(void* socket_context, const char* host, unsigned int port)> on_connect;
   std::function<kii_socket_code_t(void* socket_context, const char* buffer, size_t length)> on_send;
   std::function<kii_socket_code_t(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length)> on_recv;
+  std::function<kii_socket_code_t(void* socket_context)> on_close;
 } sock_ctx;
 
 typedef struct io_ctx {
@@ -34,7 +35,8 @@ kii_socket_code_t cb_recv(void* socket_context, char* buffer, size_t length_to_r
 }
 
 kii_socket_code_t cb_close(void* socket_context) {
-  return KII_SOCKETC_OK;
+  sock_ctx* ctx = (sock_ctx*)socket_context;
+  return ctx->on_close(socket_context);
 }
 
 size_t cb_write(char *buffer, size_t size, size_t count, void *userdata) {
@@ -65,15 +67,8 @@ TEST_CASE( "Http Test" ) {
   http.sc_close_cb = cb_close;
   
   sock_ctx s_ctx;
-  http.socket_context = &s_ctx;
+  http.socket_context = &s_ctx;  
 
-  s_ctx.on_connect = [=](void* socket_context, const char* host, unsigned int port) {
-    REQUIRE( strncmp(host, "api.kii.com", strlen("api.kii.com")) == 0 );
-    REQUIRE( strlen(host) == strlen("api.kii.com") );
-    REQUIRE( port == 8080 );
-    return KII_SOCKETC_OK;
-  };
-  
   http.read_callback = cb_read;
   http.write_callback = cb_write;
   http.header_callback = cb_header;
@@ -86,11 +81,23 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.state == CONNECT );
   REQUIRE( http.result == KIIE_OK );
 
+  bool called = false;
+  s_ctx.on_connect = [=, &called](void* socket_context, const char* host, unsigned int port) {
+    called = true;
+    REQUIRE( strncmp(host, "api.kii.com", strlen("api.kii.com")) == 0 );
+    REQUIRE( strlen(host) == strlen("api.kii.com") );
+    REQUIRE( port == 8080 );
+    return KII_SOCKETC_OK;
+  };
+
   kii_state_connect(&http);
   REQUIRE( http.state == REQUEST_LINE );
   REQUIRE( http.result == KIIE_OK );
+  REQUIRE( called );
 
-  s_ctx.on_send = [=](void* socket_context, const char* buffer, size_t length) {
+  called = false;
+  s_ctx.on_send = [=, &called](void* socket_context, const char* buffer, size_t length) {
+    called = true;
     const char req_line[] = "GET https://api.kii.com/api/apps HTTP 1.0\r\n";
     REQUIRE( length == strlen(req_line) );
     REQUIRE( strncmp(buffer, req_line, length) == 0 );
@@ -100,12 +107,15 @@ TEST_CASE( "Http Test" ) {
   kii_state_request_line(&http);
   REQUIRE( http.state == REQUEST_HEADER );
   REQUIRE( http.result == KIIE_OK );
+  REQUIRE( called );
 
   kii_state_request_header(&http);
   REQUIRE( http.state == REQUEST_HEADER_END );
   REQUIRE( http.result == KIIE_OK );
 
-  s_ctx.on_send = [=](void* socket_context, const char* buffer, size_t length) {
+  called = false;
+  s_ctx.on_send = [=, &called](void* socket_context, const char* buffer, size_t length) {
+    called = true;
     REQUIRE( length == 2 );
     REQUIRE( strncmp(buffer, "\r\n", 2) == 0 );
     return KII_SOCKETC_OK;
@@ -114,8 +124,11 @@ TEST_CASE( "Http Test" ) {
   kii_state_request_header_end(&http);
   REQUIRE( http.state == REQUEST_BODY_READ );
   REQUIRE( http.result == KIIE_OK );
+  REQUIRE( called );
 
-  io_ctx.on_read = [=](char *buffer, size_t size, size_t count, void *userdata) {
+  called = false;
+  io_ctx.on_read = [=, &called](char *buffer, size_t size, size_t count, void *userdata) {
+    called = true;
     REQUIRE( size == 1);
     REQUIRE( count == 1024);
     const char body[] = "http body";
@@ -126,8 +139,11 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.state == REQUEST_BODY_SEND );
   REQUIRE( http.result == KIIE_OK );
   REQUIRE( http.read_request_end == 1 );
+  REQUIRE( called );
 
-  s_ctx.on_send = [=](void* socket_context, const char* buffer, size_t length) {
+  called = false;
+  s_ctx.on_send = [=, &called](void* socket_context, const char* buffer, size_t length) {
+    called = true;
     const char body[] = "http body";
     REQUIRE( length == strlen(body) );
     REQUIRE( strncmp(buffer, body, length) == 0 );
@@ -136,6 +152,7 @@ TEST_CASE( "Http Test" ) {
   kii_state_request_body_send(&http);
   REQUIRE( http.state == RESPONSE_HEADERS_ALLOC );
   REQUIRE( http.result == KIIE_OK );
+  REQUIRE( called );
 
   kii_state_response_headers_alloc(&http);
   REQUIRE( http.state == RESPONSE_HEADERS_READ );
@@ -144,7 +161,9 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.resp_header_buffer == http.resp_header_buffer_current_pos );
   REQUIRE (http.resp_header_buffer_size == 1024 );
 
-  s_ctx.on_recv = [=](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+  called = false;
+  s_ctx.on_recv = [=, &called](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+    called = true;
     REQUIRE( length_to_read == 1024 );
     const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
     size_t len = strlen(status_line);
@@ -160,8 +179,11 @@ TEST_CASE( "Http Test" ) {
   // FIXME: Multiple Declaration.
   const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
   REQUIRE( http.resp_header_read_size == strlen(status_line) );
+  REQUIRE( called );
 
-  io_ctx.on_header = [=](char *buffer, size_t size, size_t count, void *userdata) {
+  called = false;
+  io_ctx.on_header = [=, &called](char *buffer, size_t size, size_t count, void *userdata) {
+    called = true;
     const char status_line[] = "HTTP 1.0 200 OK";
     size_t len = strlen(status_line);
     REQUIRE( size == 1);
@@ -174,5 +196,6 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.state == CLOSE );
   REQUIRE( http.read_end == 1 );
   REQUIRE( http.result == KIIE_OK );
+  REQUIRE( called );
 
 }
