@@ -27,7 +27,8 @@ kii_socket_code_t cb_send (void* socket_context, const char* buffer, size_t leng
 }
 
 kii_socket_code_t cb_recv(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
-  return KII_SOCKETC_OK;
+  sock_ctx* ctx = (sock_ctx*)socket_context;
+  return ctx->on_recv(socket_context, buffer, length_to_read, out_actual_length);
 }
 
 kii_socket_code_t cb_close(void* socket_context) {
@@ -132,10 +133,26 @@ TEST_CASE( "Http Test" ) {
   REQUIRE( http.state == RESPONSE_HEADERS_ALLOC );
   REQUIRE( http.result == KIIE_OK );
 
-  // s_ctx.on_recv = [=](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
-  //   REQUIRE( length_to_read == 1024 );
-  //   buffer = "http body";
-  //   *out_actual_length = strlen("http body");
-  //   return KII_SOCKETC_OK;
-  // };
+  kii_state_response_headers_alloc(&http);
+  REQUIRE( http.state == RESPONSE_HEADERS_READ );
+  REQUIRE( http.result == KIIE_OK );
+  REQUIRE( *http.resp_header_buffer == '\0' );
+  REQUIRE( http.resp_header_buffer == http.resp_header_buffer_current_pos );
+  REQUIRE (http.resp_header_buffer_size == 1024 );
+
+  s_ctx.on_recv = [=](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+    REQUIRE( length_to_read == 1024 );
+    const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
+    size_t len = strlen(status_line);
+    strncpy(buffer, status_line, len);
+    *out_actual_length = len;
+    return KII_SOCKETC_OK;
+  };
+
+  kii_state_response_headers_read(&http);
+  printf("buff: %s", http.resp_header_buffer);
+  REQUIRE( http.state == RESPONSE_HEADERS_CALLBACK );
+  REQUIRE( http.read_end == 1 );
+  REQUIRE( http.result == KIIE_OK );
+
 }

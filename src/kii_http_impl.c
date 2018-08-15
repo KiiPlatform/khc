@@ -191,6 +191,7 @@ void kii_state_response_headers_alloc(kii_http* kii_http) {
     kii_http->result = KIIE_ALLOCATION;
     return;
   }
+  *kii_http->resp_header_buffer = '\0';
   kii_http->resp_header_buffer_size = READ_RESP_HEADER_SIZE;
   kii_http->resp_header_buffer_current_pos = kii_http->resp_header_buffer;
   kii_http->state = RESPONSE_HEADERS_READ;
@@ -220,7 +221,7 @@ void kii_state_response_headers_read(kii_http* kii_http) {
   kii_socket_code_t read_res = 
     kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, READ_RESP_HEADER_SIZE, &read_size);
   if (read_res == KII_SOCKETC_OK) {
-    if (read_size == 0) {
+    if (read_size < READ_RESP_HEADER_SIZE) {
       kii_http->read_end = 1;
     }
     // Search boundary for whole buffer.
@@ -377,6 +378,7 @@ const KII_STATE_HANDLER state_handlers[] = {
   kii_state_request_body_send,
   kii_state_response_headers_alloc,
   kii_state_response_headers_realloc,
+  kii_state_response_headers_read,
   kii_state_response_headers_callback,
   kii_state_response_body_flagment,
   kii_state_response_body_read,
