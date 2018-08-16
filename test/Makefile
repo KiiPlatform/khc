@@ -1,21 +1,40 @@
+LIB_SRCS=$(wildcard ../src/*.c)
+LIB_SRCS+=$(wildcard ../src/*.h)
+LIB_SRCS+=$(wildcard ../include/*.h)
+LIB_BUILD_DIR=build-http
+LIB_TARGET=$(wildcard $(LIB_BUILD_DIR)/include/*.h)
+LIB_TARGET+=$(wildcard $(LIB_BUILD_DIR)/lib/libkiihttp.*)
 
 TARGET=./testapp
-INCLUDES=-I.
+INCLUDES=-I. -I$(LIB_BUILD_DIR)/include
+LIBS_DIR=-L$(LIB_BUILD_DIR)/lib
+
 LIBS=-lkiihttp
 SRCS=$(wildcard *.cpp)
 TEST_RESULT=test-result.xml
 
-$(TARGET): $(SRCS)
-	g++ -g $(SRCS) $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
+ifdef MEMCHECK
+TESTCMD=valgrind --leak-check=yes $(TARGET)
+else
+TESTCMD=$(TARGET)
+endif
+
+$(LIB_BUILD_DIR): $(LIB_SRCS)
+	mkdir -p $(LIB_BUILD_DIR)
+	cd $(LIB_BUILD_DIR) && cmake -DCMAKE_INSTALL_PREFIX=. ../.. && make install
+
+$(TARGET): $(SRCS) $(LIB_BUILD_DIR)
+	g++ -g $(SRCS) $(LIBS_DIR) $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
+
+build: $(TARGET)
 
 test: $(TARGET)
-	$(TARGET) -r junit -o $(TEST_RESULT)
-
-memcheck: $(TARGET)
-	valgrind --leak-check=yes $(TARGET)
+	LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(LIB_BUILD_DIR)/lib \
+	$(TESTCMD) -r junit -o $(TEST_RESULT)
 
 clean:
 	rm -f $(TARGET)
 	rm -f $(TEST_RESULT)
+	rm -rf $(LIB_BUILD_DIR)
 
-.PHONY: clean test memcheck
+.PHONY: build clean test
