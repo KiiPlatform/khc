@@ -2,8 +2,6 @@ LIB_SRCS=$(wildcard ../src/*.c)
 LIB_SRCS+=$(wildcard ../src/*.h)
 LIB_SRCS+=$(wildcard ../include/*.h)
 LIB_BUILD_DIR=build-http
-LIB_TARGET=$(wildcard $(LIB_BUILD_DIR)/include/*.h)
-LIB_TARGET+=$(wildcard $(LIB_BUILD_DIR)/lib/libkiihttp.*)
 
 TARGET=./testapp
 INCLUDES=-I. -I$(LIB_BUILD_DIR)/include
@@ -18,6 +16,8 @@ TESTCMD=valgrind --leak-check=yes $(TARGET)
 else
 TESTCMD=$(TARGET)
 endif
+
+all: test
 
 $(LIB_BUILD_DIR): $(LIB_SRCS)
 	mkdir -p $(LIB_BUILD_DIR)
