@@ -2,20 +2,20 @@
 TARGET=./testapp
 INCLUDES=-I.
 LIBS=-lkiihttp
-all: clean $(TARGET)
+SRCS=$(wildcard *.cpp)
+TEST_RESULT=test-result.xml
 
-$(TARGET):
-	g++ -g mock_test.cpp $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
+$(TARGET): $(SRCS)
+	g++ -g $(SRCS) $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
 
 test: $(TARGET)
-	$(TARGET) -r junit -o unit-test.xml
+	$(TARGET) -r junit -o $(TEST_RESULT)
 
-memory-check: $(TARGET)
+memcheck: $(TARGET)
 	valgrind --leak-check=yes $(TARGET)
-clean:
-	touch $(TARGET)
-	rm $(TARGET)
-	touch unit-test.xml
-	rm unit-test.xml
 
-.PHONY: all clean test memory-check
+clean:
+	rm -f $(TARGET)
+	rm -f $(TEST_RESULT)
+
+.PHONY: clean test memcheck
