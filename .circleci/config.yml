@@ -3,6 +3,7 @@ jobs:
   build:
     docker:
       - image: satoshikumano/ubuntu-18.04-cpp:0.0.1
+
     steps:
       - checkout
       - run: cd small-test && make
