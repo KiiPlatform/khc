@@ -97,6 +97,7 @@ typedef struct kii_http {
   char* resp_header_buffer;
   char* resp_header_buffer_current_pos;
   size_t resp_header_buffer_size;
+  size_t resp_header_read_size;
 
   /** Pointer to the double CRLF boundary in the resp_header_buffer */
   char* body_boundary;

@@ -17,6 +17,9 @@ void kii_state_idle(kii_http* kii_http) {
   kii_http->state = CONNECT;
   kii_http->resp_header_buffer_size = 0;
   kii_http->read_end = 0;
+  kii_http->read_size = 0;
+  kii_http->resp_header_read_size = 0;
+  kii_http->result = KIIE_OK;
   return;
 }
 
@@ -157,7 +160,7 @@ void kii_state_request_body_read(kii_http* kii_http) {
   kii_http->read_size = kii_http->read_callback(kii_http->read_buffer, 1, READ_BODY_SIZE, kii_http->read_data);
   // TODO: handle read failure. let return signed value?
   kii_http->state = REQUEST_BODY_SEND;
-  if (kii_http->read_size == 0) {
+  if (kii_http->read_size < READ_BODY_SIZE) {
     kii_http->read_request_end = 1;
   }
   return;
@@ -190,6 +193,7 @@ void kii_state_response_headers_alloc(kii_http* kii_http) {
     kii_http->result = KIIE_ALLOCATION;
     return;
   }
+  *kii_http->resp_header_buffer = '\0';
   kii_http->resp_header_buffer_size = READ_RESP_HEADER_SIZE;
   kii_http->resp_header_buffer_current_pos = kii_http->resp_header_buffer;
   kii_http->state = RESPONSE_HEADERS_READ;
@@ -219,7 +223,8 @@ void kii_state_response_headers_read(kii_http* kii_http) {
   kii_socket_code_t read_res = 
     kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, READ_RESP_HEADER_SIZE, &read_size);
   if (read_res == KII_SOCKETC_OK) {
-    if (read_size == 0) {
+    kii_http->resp_header_read_size += read_size;
+    if (read_size < READ_RESP_HEADER_SIZE) {
       kii_http->read_end = 1;
     }
     // Search boundary for whole buffer.
@@ -269,7 +274,8 @@ void kii_state_response_headers_callback(kii_http* kii_http) {
     return;
   } else { // Callback called for all headers.
     // Check if body is included in the buffer.
-    size_t body_size = kii_http->cb_header_remaining_size - 4;
+    size_t header_size = kii_http->body_boundary - kii_http->resp_header_buffer;
+    size_t body_size = kii_http->resp_header_read_size - header_size - 4;
     if (body_size > 0) {
       kii_http->body_flagment = kii_http->body_boundary + 4;
       kii_http->body_flagment_size = body_size;
@@ -376,6 +382,7 @@ const KII_STATE_HANDLER state_handlers[] = {
   kii_state_request_body_send,
   kii_state_response_headers_alloc,
   kii_state_response_headers_realloc,
+  kii_state_response_headers_read,
   kii_state_response_headers_callback,
   kii_state_response_body_flagment,
   kii_state_response_body_read,

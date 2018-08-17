@@ -19,6 +19,7 @@ void kii_state_request_body_read(kii_http* kii_http);
 void kii_state_request_body_send(kii_http* kii_http);
 void kii_state_response_headers_alloc(kii_http* kii_http);
 void kii_state_response_headers_realloc(kii_http* kii_http);
+void kii_state_response_headers_read(kii_http* kii_http);
 void kii_state_response_headers_callback(kii_http* kii_http);
 void kii_state_response_body_flagment(kii_http* kii_http);
 void kii_state_response_body_read(kii_http* kii_http);

@@ -3,6 +3,18 @@
     "string": "cpp",
     "string_view": "cpp",
     "vector": "cpp",
-    "locale": "cpp"
+    "locale": "cpp",
+    "__split_buffer": "cpp",
+    "__tree": "cpp",
+    "bitset": "cpp",
+    "deque": "cpp",
+    "initializer_list": "cpp",
+    "iterator": "cpp",
+    "map": "cpp",
+    "random": "cpp",
+    "regex": "cpp",
+    "set": "cpp",
+    "utility": "cpp",
+    "string.h": "c"
   }
 }

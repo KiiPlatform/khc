@@ -1,5 +1,3 @@
-#define CATCH_CONFIG_MAIN
-
 #include <string.h>
 #include "catch.hpp"
 #include "kii_http.h"
