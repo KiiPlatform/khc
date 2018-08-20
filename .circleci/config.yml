@@ -1,0 +1,11 @@
+version: 2.0
+jobs:
+  build:
+    docker:
+      - image: satoshikumano/ubuntu-18.04-cpp:0.0.1
+
+    steps:
+      - checkout
+      - run: cd small-test && MEMCHECK=1 make
+      - store_test_results:
+          path: small-test/test-results

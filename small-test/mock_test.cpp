@@ -163,7 +163,7 @@ TEST_CASE( "HTTP minimal" ) {
   called = false;
   s_ctx.on_recv = [=, &called](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
-    REQUIRE( length_to_read == 1024 );
+    REQUIRE( length_to_read == 1023 );
     const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
     size_t len = strlen(status_line);
     strncpy(buffer, status_line, len);

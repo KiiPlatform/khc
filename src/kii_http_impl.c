@@ -193,7 +193,7 @@ void kii_state_response_headers_alloc(kii_http* kii_http) {
     kii_http->result = KIIE_ALLOCATION;
     return;
   }
-  *kii_http->resp_header_buffer = '\0';
+  memset(kii_http->resp_header_buffer, '\0', READ_RESP_HEADER_SIZE);
   kii_http->resp_header_buffer_size = READ_RESP_HEADER_SIZE;
   kii_http->resp_header_buffer_current_pos = kii_http->resp_header_buffer;
   kii_http->state = RESPONSE_HEADERS_READ;
@@ -213,6 +213,7 @@ void kii_state_response_headers_realloc(kii_http* kii_http) {
   // Pointer: last part newly allocated.
   kii_http->resp_header_buffer = newBuff;
   kii_http->resp_header_buffer_current_pos = newBuff + kii_http->resp_header_buffer_size;
+  memset(kii_http->resp_header_buffer_current_pos, '\0', READ_RESP_HEADER_SIZE);
   kii_http->resp_header_buffer_size = kii_http->resp_header_buffer_size + READ_RESP_HEADER_SIZE;
   kii_http->state = RESPONSE_HEADERS_READ;
   return;
@@ -220,15 +221,16 @@ void kii_state_response_headers_realloc(kii_http* kii_http) {
 
 void kii_state_response_headers_read(kii_http* kii_http) {
   size_t read_size = 0;
+  size_t read_req_size = READ_RESP_HEADER_SIZE - 1;
   kii_socket_code_t read_res = 
-    kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, READ_RESP_HEADER_SIZE, &read_size);
+    kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, read_req_size, &read_size);
   if (read_res == KII_SOCKETC_OK) {
     kii_http->resp_header_read_size += read_size;
     if (read_size < READ_RESP_HEADER_SIZE) {
       kii_http->read_end = 1;
     }
     // Search boundary for whole buffer.
-    char* boundary = strnstr(kii_http->resp_header_buffer, "\r\n\r\n", kii_http->resp_header_buffer_size);
+    char* boundary = strstr(kii_http->resp_header_buffer, "\r\n\r\n");
     if (boundary == NULL) {
       // Not reached to end of headers.
       kii_http->state = RESPONSE_HEADERS_REALLOC;
@@ -256,7 +258,7 @@ void kii_state_response_headers_read(kii_http* kii_http) {
 }
 
 void kii_state_response_headers_callback(kii_http* kii_http) {
-  char* header_boundary = strnstr(kii_http->cb_header_pos, "\r\n", kii_http->cb_header_remaining_size);
+  char* header_boundary = strstr(kii_http->cb_header_pos, "\r\n");
   size_t header_size = header_boundary - kii_http->cb_header_pos;
   size_t header_written = 
     kii_http->header_callback(kii_http->cb_header_pos, 1, header_size, kii_http->header_data);
