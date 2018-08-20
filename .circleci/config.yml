@@ -6,4 +6,5 @@ jobs:
 
     steps:
       - checkout
-      - run: cd small-test && make
+      - run: cd small-test && MEMCHECK=1 make
+      - store_test_results: small-test/test-result.xml
