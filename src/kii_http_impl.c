@@ -24,7 +24,7 @@ void kii_state_idle(kii_http* kii_http) {
 }
 
 void kii_state_connect(kii_http* kii_http) {
-  kii_socket_code_t con_res = kii_http->sc_connect_cb(kii_http->socket_context, kii_http->host, 8080);
+  kii_socket_code_t con_res = kii_http->sc_connect_cb(kii_http->socket_context_connect, kii_http->host, 8080);
   if (con_res == KII_SOCKETC_OK) {
     kii_http->state = REQUEST_LINE;
     return;
@@ -69,7 +69,7 @@ void kii_state_request_line(kii_http* kii_http) {
   strcat(request_line, path);
   strcat(request_line, " ");
   strcat(request_line, http_version);
-  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, request_line, strlen(request_line));
+  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context_send, request_line, strlen(request_line));
   if (send_res == KII_SOCKETC_OK) {
     kii_http->state = REQUEST_HEADER;
     kii_http->current_request_header = kii_http->reaquest_headers;
@@ -107,7 +107,7 @@ void kii_state_request_header(kii_http* kii_http) {
 
 void kii_state_request_header_send(kii_http* kii_http) {
   char* line = kii_http->current_request_header->data;
-  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, line, strlen(line));
+  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context_send, line, strlen(line));
   if (send_res == KII_SOCKETC_OK) {
     kii_http->state = REQUEST_HEADER_SEND_CRLF;
     return;
@@ -123,7 +123,7 @@ void kii_state_request_header_send(kii_http* kii_http) {
 }
 
 void kii_state_request_header_send_crlf(kii_http* kii_http) {
-  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, "\r\n", 2);
+  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context_send, "\r\n", 2);
   if (send_res == KII_SOCKETC_OK) {
     kii_http->current_request_header = kii_http->current_request_header->next;
     kii_http->state = REQUEST_HEADER;
@@ -140,7 +140,7 @@ void kii_state_request_header_send_crlf(kii_http* kii_http) {
 }
 
 void kii_state_request_header_end(kii_http* kii_http) {
-  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, "\r\n", 2);
+  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context_send, "\r\n", 2);
   if (send_res == KII_SOCKETC_OK) {
     kii_http->state = REQUEST_BODY_READ;
     kii_http->read_request_end = 0;
@@ -167,7 +167,7 @@ void kii_state_request_body_read(kii_http* kii_http) {
 }
 
 void kii_state_request_body_send(kii_http* kii_http) {
-  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context, kii_http->read_buffer, kii_http->read_size);
+  kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context_send, kii_http->read_buffer, kii_http->read_size);
   if (send_res == KII_SOCKETC_OK) {
     if (kii_http->read_request_end == 1) {
       kii_http->state = RESPONSE_HEADERS_ALLOC;
@@ -223,7 +223,7 @@ void kii_state_response_headers_read(kii_http* kii_http) {
   size_t read_size = 0;
   size_t read_req_size = READ_RESP_HEADER_SIZE - 1;
   kii_socket_code_t read_res = 
-    kii_http->sc_recv_cb(kii_http->socket_context, kii_http->resp_header_buffer_current_pos, read_req_size, &read_size);
+    kii_http->sc_recv_cb(kii_http->socket_context_recv, kii_http->resp_header_buffer_current_pos, read_req_size, &read_size);
   if (read_res == KII_SOCKETC_OK) {
     kii_http->resp_header_read_size += read_size;
     if (read_size < READ_RESP_HEADER_SIZE) {
@@ -321,7 +321,7 @@ void kii_state_response_body_flagment(kii_http* kii_http) {
 void kii_state_response_body_read(kii_http* kii_http) {
   size_t read_size = 0;
   kii_socket_code_t read_res = 
-    kii_http->sc_recv_cb(kii_http->socket_context, kii_http->body_buffer, READ_BODY_SIZE, &read_size);
+    kii_http->sc_recv_cb(kii_http->socket_context_recv, kii_http->body_buffer, READ_BODY_SIZE, &read_size);
   if (read_res == KII_SOCKETC_OK) {
     if (read_size < READ_BODY_SIZE) {
       kii_http->read_end = 1;
@@ -356,7 +356,7 @@ void kii_state_response_body_callback(kii_http* kii_http) {
 }
 
 void kii_state_close(kii_http* kii_http) {
-  kii_socket_code_t close_res = kii_http->sc_close_cb(kii_http->socket_context);
+  kii_socket_code_t close_res = kii_http->sc_close_cb(kii_http->socket_context_close);
   if (close_res == KII_SOCKETC_OK) {
     kii_http->state = FINISHED;
     kii_http->result = KIIE_OK;

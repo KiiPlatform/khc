@@ -84,7 +84,10 @@ typedef struct kii_http {
   KII_SOCKET_RECV_CB sc_recv_cb;
   KII_SOCKET_CLOSE_CB sc_close_cb;
   /** Socket context. */
-  void* socket_context;
+  void* socket_context_connect;
+  void* socket_context_send;
+  void* socket_context_recv;
+  void* socket_context_close;
 
   kii_slist* current_request_header;
 

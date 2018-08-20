@@ -66,7 +66,10 @@ TEST_CASE( "HTTP minimal" ) {
   http.sc_close_cb = cb_close;
   
   sock_ctx s_ctx;
-  http.socket_context = &s_ctx;  
+  http.socket_context_connect = &s_ctx;
+  http.socket_context_send = &s_ctx;
+  http.socket_context_recv = &s_ctx;
+  http.socket_context_close = &s_ctx;
 
   http.read_callback = cb_read;
   http.write_callback = cb_write;
