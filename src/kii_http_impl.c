@@ -4,6 +4,65 @@
 #include "kii_http.h"
 #include "kii_http_impl.h"
 
+kii_http_code kii_setopt(kii_http* kii_http, kii_http_option opt, void* data) {
+  switch(opt) {
+    case KIIOPT_HOST:
+      kii_http->host = (char*)data;
+      break;
+    case KIIOPT_PATH:
+      kii_http->path = (char*)data;
+      break;
+    case KIIOPT_METHOD:
+      kii_http->method = (char*)data;
+      break;
+    case KIIOPT_SOCK_CONNECT_FUNC:
+      kii_http->sc_connect_cb = data;
+      break;
+    case KIIOPT_SOCK_CONNECT_DATA:
+      kii_http->socket_context_connect = data;
+      break;
+    case KIIOPT_SOCK_SEND_FUNC:
+      kii_http->sc_send_cb = data;
+      break;
+    case KIIOPT_SOCK_SEND_DATA:
+      kii_http->socket_context_send = data;
+      break;
+    case KIIOPT_SOCK_RECV_FUNC:
+      kii_http->sc_recv_cb = data;
+      break;
+    case KIIOPT_SOCK_RECV_DATA:
+      kii_http->socket_context_recv = data;
+      break;
+    case KIIOPT_SOCK_CLOSE_FUNC:
+      kii_http->sc_close_cb = data;
+      break;
+    case KIIOPT_SOCK_CLOSE_DATA:
+      kii_http->socket_context_close = data;
+      break;
+    case KIIOPT_READ_FUNC:
+      kii_http->read_callback = data;
+      break;
+    case KIIOPT_READ_DATA:
+      kii_http->read_data = data;
+      break;
+    case KIIOPT_WRITE_FUNC:
+      kii_http->write_callback = data;
+      break;
+    case KIIOPT_WRITE_DATA:
+      kii_http->write_data = data;
+      break;
+    case KIIOPT_HEADER_FUNC:
+      kii_http->header_callback = data;
+      break;
+    case KIIOPT_HEADER_DATA:
+      kii_http->header_data = data;
+      break;
+    default:
+      return KIIE_FAIL;
+  }
+  return KIIE_OK;
+}
+
 void kii_state_idle(kii_http* kii_http) {
   if (kii_http->host == NULL) {
     // Fallback to localhost

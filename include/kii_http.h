@@ -26,6 +26,28 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
 
+typedef enum kii_http_option {
+  KIIOPT_HOST,
+  KIIOPT_PATH,
+  KIIOPT_METHOD,
+
+  KIIOPT_SOCK_CONNECT_FUNC,
+  KIIOPT_SOCK_CONNECT_DATA,
+  KIIOPT_SOCK_SEND_FUNC,
+  KIIOPT_SOCK_SEND_DATA,
+  KIIOPT_SOCK_RECV_FUNC,
+  KIIOPT_SOCK_RECV_DATA,
+  KIIOPT_SOCK_CLOSE_FUNC,
+  KIIOPT_SOCK_CLOSE_DATA,
+
+  KIIOPT_READ_FUNC,
+  KIIOPT_READ_DATA,
+  KIIOPT_WRITE_FUNC,
+  KIIOPT_WRITE_DATA,
+  KIIOPT_HEADER_FUNC,
+  KIIOPT_HEADER_DATA
+} kii_http_option;
+
 typedef enum kii_http_state {
   IDLE,
   CONNECT,
@@ -121,6 +143,8 @@ typedef struct kii_http {
 } kii_http;
 
 kii_http_code kii_http_perform(kii_http* kii_http);
+
+kii_http_code kii_setopt(kii_http* kii_http, kii_http_option opt, void* data);
 
 #ifdef __cplusplus
 }
