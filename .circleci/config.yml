@@ -8,4 +8,4 @@ jobs:
       - checkout
       - run: cd small-test && MEMCHECK=1 make
       - store_test_results:
-          path: small-test/test-result.xml
+          path: small-test/test-results
