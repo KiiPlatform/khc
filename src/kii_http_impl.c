@@ -4,7 +4,7 @@
 #include "kii_http.h"
 #include "kii_http_impl.h"
 
-kii_http_code kii_setopt(kii_http* kii_http, kii_http_option opt, void* data) {
+kii_http_code kii_http_setopt(kii_http* kii_http, kii_http_option opt, void* data) {
   switch(opt) {
     case KIIOPT_HOST:
       kii_http->host = (char*)data;

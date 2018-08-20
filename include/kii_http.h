@@ -144,7 +144,7 @@ typedef struct kii_http {
 
 kii_http_code kii_http_perform(kii_http* kii_http);
 
-kii_http_code kii_setopt(kii_http* kii_http, kii_http_option opt, void* data);
+kii_http_code kii_http_setopt(kii_http* kii_http, kii_http_option opt, void* data);
 
 #ifdef __cplusplus
 }
