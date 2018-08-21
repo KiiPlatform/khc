@@ -15,6 +15,9 @@ kii_http_code kii_http_setopt(kii_http* kii_http, kii_http_option opt, void* dat
     case KIIOPT_METHOD:
       kii_http->method = (char*)data;
       break;
+    case KIIOPT_REQ_HEADERS:
+      kii_http->request_headers = (kii_slist*)data;
+      break;
     case KIIOPT_SOCK_CONNECT_FUNC:
       kii_http->sc_connect_cb = data;
       break;
@@ -131,7 +134,7 @@ void kii_state_request_line(kii_http* kii_http) {
   kii_socket_code_t send_res = kii_http->sc_send_cb(kii_http->socket_context_send, request_line, strlen(request_line));
   if (send_res == KII_SOCKETC_OK) {
     kii_http->state = REQUEST_HEADER;
-    kii_http->current_request_header = kii_http->reaquest_headers;
+    kii_http->current_request_header = kii_http->request_headers;
     return;
   }
   if (send_res == KII_SOCKETC_AGAIN) {

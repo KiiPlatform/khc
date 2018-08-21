@@ -55,10 +55,11 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 
 TEST_CASE( "HTTP minimal" ) {
   kii_http http;
-  http.host = (char*)"api.kii.com";
-  http.method = (char*)"GET";
-  http.path = (char*)"/api/apps";
-  http.reaquest_headers = NULL;
+
+  kii_http_setopt(&http, KIIOPT_HOST, (char*)"api.kii.com");
+  kii_http_setopt(&http, KIIOPT_METHOD, (char*)"GET");
+  kii_http_setopt(&http, KIIOPT_PATH, (char*)"/api/apps");
+  kii_http_setopt(&http, KIIOPT_REQ_HEADERS, NULL);
 
   http.sc_connect_cb = cb_connect;
   http.sc_send_cb = cb_send;

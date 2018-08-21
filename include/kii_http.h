@@ -30,6 +30,7 @@ typedef enum kii_http_option {
   KIIOPT_HOST,
   KIIOPT_PATH,
   KIIOPT_METHOD,
+  KIIOPT_REQ_HEADERS,
 
   KIIOPT_SOCK_CONNECT_FUNC,
   KIIOPT_SOCK_CONNECT_DATA,
@@ -91,7 +92,7 @@ typedef struct kii_http {
   void* header_data;
 
   /** Request header list */
-  kii_slist* reaquest_headers;
+  kii_slist* request_headers;
 
   char* host;
   char* path;
