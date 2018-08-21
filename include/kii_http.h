@@ -26,28 +26,12 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
 
-typedef enum kii_http_option {
-  KIIOPT_HOST,
-  KIIOPT_PATH,
-  KIIOPT_METHOD,
-  KIIOPT_REQ_HEADERS,
-
-  KIIOPT_SOCK_CONNECT_FUNC,
-  KIIOPT_SOCK_CONNECT_DATA,
-  KIIOPT_SOCK_SEND_FUNC,
-  KIIOPT_SOCK_SEND_DATA,
-  KIIOPT_SOCK_RECV_FUNC,
-  KIIOPT_SOCK_RECV_DATA,
-  KIIOPT_SOCK_CLOSE_FUNC,
-  KIIOPT_SOCK_CLOSE_DATA,
-
-  KIIOPT_READ_FUNC,
-  KIIOPT_READ_DATA,
-  KIIOPT_WRITE_FUNC,
-  KIIOPT_WRITE_DATA,
-  KIIOPT_HEADER_FUNC,
-  KIIOPT_HEADER_DATA
-} kii_http_option;
+typedef enum kii_http_param {
+  KII_PARAM_HOST,
+  KII_PARAM_PATH,
+  KII_PARAM_METHOD,
+  KII_PARAM_REQ_HEADERS
+} kii_http_param;
 
 typedef enum kii_http_state {
   IDLE,
@@ -106,7 +90,7 @@ typedef struct kii_http {
   KII_SOCKET_SEND_CB sc_send_cb;
   KII_SOCKET_RECV_CB sc_recv_cb;
   KII_SOCKET_CLOSE_CB sc_close_cb;
-  /** Socket context. */
+  /**   Socket context. */
   void* socket_context_connect;
   void* socket_context_send;
   void* socket_context_recv;
@@ -145,7 +129,42 @@ typedef struct kii_http {
 
 kii_http_code kii_http_perform(kii_http* kii_http);
 
-kii_http_code kii_http_setopt(kii_http* kii_http, kii_http_option opt, void* data);
+kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, void* data);
+
+kii_http_code kii_http_set_sock_connect_cb(
+  kii_http* kii_http,
+  KII_SOCKET_CONNECT_CB cb,
+  void* userdata);
+
+kii_http_code kii_http_set_sock_send_cb(
+  kii_http* kii_http,
+  KII_SOCKET_SEND_CB cb,
+  void* userdata);
+
+kii_http_code kii_http_set_sock_recv_cb(
+  kii_http* kii_http,
+  KII_SOCKET_RECV_CB cb,
+  void* userdata);
+
+kii_http_code kii_http_set_read_cb(
+  kii_http* kii_http,
+  READ_CALLBACK cb,
+  void* userdata);
+
+kii_http_code kii_http_set_write_cb(
+  kii_http* kii_http,
+  WRITE_CALLBACK cb,
+  void* userdata);
+
+kii_http_code kii_http_set_header_cb(
+  kii_http* kii_http,
+  HEADER_CALLBACK cb,
+  void* userdata);
+
+kii_http_code kii_http_set_sock_close_cb(
+  kii_http* kii_http,
+  KII_SOCKET_CLOSE_CB cb,
+  void* userdata);
 
 #ifdef __cplusplus
 }

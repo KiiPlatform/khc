@@ -15,6 +15,7 @@
     "regex": "cpp",
     "set": "cpp",
     "utility": "cpp",
-    "string.h": "c"
+    "string.h": "c",
+    "algorithm": "c"
   }
 }

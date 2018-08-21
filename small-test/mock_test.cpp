@@ -56,30 +56,22 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 TEST_CASE( "HTTP minimal" ) {
   kii_http http;
 
-  kii_http_setopt(&http, KIIOPT_HOST, (char*)"api.kii.com");
-  kii_http_setopt(&http, KIIOPT_METHOD, (char*)"GET");
-  kii_http_setopt(&http, KIIOPT_PATH, (char*)"/api/apps");
-  kii_http_setopt(&http, KIIOPT_REQ_HEADERS, NULL);
+  kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
+  kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
+  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
+  kii_http_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
-  http.sc_connect_cb = cb_connect;
-  http.sc_send_cb = cb_send;
-  http.sc_recv_cb = cb_recv;
-  http.sc_close_cb = cb_close;
-  
   sock_ctx s_ctx;
-  http.socket_context_connect = &s_ctx;
-  http.socket_context_send = &s_ctx;
-  http.socket_context_recv = &s_ctx;
-  http.socket_context_close = &s_ctx;
+  kii_http_set_sock_connect_cb(&http, cb_connect, &s_ctx);
+  kii_http_set_sock_send_cb(&http, cb_send, &s_ctx);
+  kii_http_set_sock_recv_cb(&http, cb_recv, &s_ctx);
+  kii_http_set_sock_close_cb(&http, cb_close, &s_ctx);
 
-  http.read_callback = cb_read;
-  http.write_callback = cb_write;
-  http.header_callback = cb_header;
   io_ctx io_ctx;
-  http.read_data = &io_ctx;
-  http.write_data = &io_ctx;
-  http.header_data = &io_ctx;
-  
+  kii_http_set_read_cb(&http, cb_read, &io_ctx);
+  kii_http_set_write_cb(&http, cb_write, &io_ctx);
+  kii_http_set_header_cb(&http, cb_header, &io_ctx);
+
   kii_state_idle(&http);
   REQUIRE( http.state == CONNECT );
   REQUIRE( http.result == KIIE_OK );

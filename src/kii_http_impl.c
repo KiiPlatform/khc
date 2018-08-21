@@ -4,61 +4,89 @@
 #include "kii_http.h"
 #include "kii_http_impl.h"
 
-kii_http_code kii_http_setopt(kii_http* kii_http, kii_http_option opt, void* data) {
-  switch(opt) {
-    case KIIOPT_HOST:
+kii_http_code kii_http_set_sock_connect_cb(
+  kii_http* kii_http,
+  KII_SOCKET_CONNECT_CB cb,
+  void* userdata)
+{
+  kii_http->sc_connect_cb = cb;
+  kii_http->socket_context_connect = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_sock_send_cb(
+  kii_http* kii_http,
+  KII_SOCKET_SEND_CB cb,
+  void* userdata)
+{
+  kii_http->sc_send_cb = cb;
+  kii_http->socket_context_send = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_sock_recv_cb(
+  kii_http* kii_http,
+  KII_SOCKET_RECV_CB cb,
+  void* userdata)
+{
+  kii_http->sc_recv_cb = cb;
+  kii_http->socket_context_recv = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_read_cb(
+  kii_http* kii_http,
+  READ_CALLBACK cb,
+  void* userdata)
+{
+  kii_http->read_callback = cb;
+  kii_http->read_data = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_write_cb(
+  kii_http* kii_http,
+  WRITE_CALLBACK cb,
+  void* userdata)
+{
+  kii_http->write_callback = cb;
+  kii_http->write_data = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_header_cb(
+  kii_http* kii_http,
+  HEADER_CALLBACK cb,
+  void* userdata)
+{
+  kii_http->header_callback = cb;
+  kii_http->header_data = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_sock_close_cb(
+  kii_http* kii_http,
+  KII_SOCKET_CLOSE_CB cb,
+  void* userdata)
+{
+  kii_http->sc_close_cb = cb;
+  kii_http->socket_context_close = userdata;
+  return KIIE_OK;
+}
+
+kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, void* data) {
+  switch(param_type) {
+    case KII_PARAM_HOST:
       kii_http->host = (char*)data;
       break;
-    case KIIOPT_PATH:
+    case KII_PARAM_PATH:
       kii_http->path = (char*)data;
       break;
-    case KIIOPT_METHOD:
+    case KII_PARAM_METHOD:
       kii_http->method = (char*)data;
       break;
-    case KIIOPT_REQ_HEADERS:
+    case KII_PARAM_REQ_HEADERS:
       kii_http->request_headers = (kii_slist*)data;
-      break;
-    case KIIOPT_SOCK_CONNECT_FUNC:
-      kii_http->sc_connect_cb = data;
-      break;
-    case KIIOPT_SOCK_CONNECT_DATA:
-      kii_http->socket_context_connect = data;
-      break;
-    case KIIOPT_SOCK_SEND_FUNC:
-      kii_http->sc_send_cb = data;
-      break;
-    case KIIOPT_SOCK_SEND_DATA:
-      kii_http->socket_context_send = data;
-      break;
-    case KIIOPT_SOCK_RECV_FUNC:
-      kii_http->sc_recv_cb = data;
-      break;
-    case KIIOPT_SOCK_RECV_DATA:
-      kii_http->socket_context_recv = data;
-      break;
-    case KIIOPT_SOCK_CLOSE_FUNC:
-      kii_http->sc_close_cb = data;
-      break;
-    case KIIOPT_SOCK_CLOSE_DATA:
-      kii_http->socket_context_close = data;
-      break;
-    case KIIOPT_READ_FUNC:
-      kii_http->read_callback = data;
-      break;
-    case KIIOPT_READ_DATA:
-      kii_http->read_data = data;
-      break;
-    case KIIOPT_WRITE_FUNC:
-      kii_http->write_callback = data;
-      break;
-    case KIIOPT_WRITE_DATA:
-      kii_http->write_data = data;
-      break;
-    case KIIOPT_HEADER_FUNC:
-      kii_http->header_callback = data;
-      break;
-    case KIIOPT_HEADER_DATA:
-      kii_http->header_data = data;
       break;
     default:
       return KIIE_FAIL;
