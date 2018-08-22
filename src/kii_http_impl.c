@@ -6,7 +6,7 @@
 
 kii_http_code kii_http_set_cb_sock_connect(
   kii_http* kii_http,
-  KIICB_SOCK_CONNECT cb,
+  KII_CB_SOCK_CONNECT cb,
   void* userdata)
 {
   kii_http->_cb_sock_connect = cb;
@@ -16,7 +16,7 @@ kii_http_code kii_http_set_cb_sock_connect(
 
 kii_http_code kii_http_set_cb_sock_send(
   kii_http* kii_http,
-  KIICB_SOCK_SEND cb,
+  KII_CB_SOCK_SEND cb,
   void* userdata)
 {
   kii_http->_cb_sock_send = cb;
@@ -26,7 +26,7 @@ kii_http_code kii_http_set_cb_sock_send(
 
 kii_http_code kii_http_set_cb_sock_recv(
   kii_http* kii_http,
-  KIICB_SOCK_RECV cb,
+  KII_CB_SOCK_RECV cb,
   void* userdata)
 {
   kii_http->_cb_sock_recv = cb;
@@ -36,7 +36,7 @@ kii_http_code kii_http_set_cb_sock_recv(
 
 kii_http_code kii_http_set_cb_sock_close(
   kii_http* kii_http,
-  KIICB_SOCK_CLOSE cb,
+  KII_CB_SOCK_CLOSE cb,
   void* userdata)
 {
   kii_http->_cb_sock_close = cb;
@@ -46,7 +46,7 @@ kii_http_code kii_http_set_cb_sock_close(
 
 kii_http_code kii_http_set_cb_read(
   kii_http* kii_http,
-  KIICB_READ cb,
+  KII_CB_READ cb,
   void* userdata)
 {
   kii_http->_cb_read = cb;
@@ -56,7 +56,7 @@ kii_http_code kii_http_set_cb_read(
 
 kii_http_code kii_http_set_cb_write(
   kii_http* kii_http,
-  KIICB_WRITE cb,
+  KII_CB_WRITE cb,
   void* userdata)
 {
   kii_http->_cb_write = cb;
@@ -66,7 +66,7 @@ kii_http_code kii_http_set_cb_write(
 
 kii_http_code kii_http_set_cb_header(
   kii_http* kii_http,
-  KIICB_HEADER cb,
+  KII_CB_HEADER cb,
   void* userdata)
 {
   kii_http->_cb_header = cb;

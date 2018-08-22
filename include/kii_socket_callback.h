@@ -34,7 +34,7 @@ typedef enum kii_sock_code_t {
  * success or fail, applications need to return KII_SOCKETC_AGAIN.
  */
 typedef kii_sock_code_t
-    (*KIICB_SOCK_CONNECT)
+    (*KII_CB_SOCK_CONNECT)
     (void* sock_ctx, const char* host, unsigned int port);
 
 /** Callback for sending data to server.
@@ -51,7 +51,7 @@ typedef kii_sock_code_t
  * KiiThingSDK Embedded Core pass same data to this callback again.
  */
 typedef kii_sock_code_t
-    (*KIICB_SOCK_SEND)
+    (*KII_CB_SOCK_SEND)
     (void* sock_ctx, const char* buffer, size_t length);
 
 /** Callback for receiving data from server.
@@ -70,7 +70,7 @@ typedef kii_sock_code_t
  * data to buffer if some data is received.
  */
 typedef kii_sock_code_t
-    (*KIICB_SOCK_RECV)
+    (*KII_CB_SOCK_RECV)
     (void* sock_ctx, char* buffer, size_t length_to_read,
      size_t* out_actual_length);
 
@@ -86,7 +86,7 @@ typedef kii_sock_code_t
  * KII_SOCKETC_AGAIN.
  */
 typedef kii_sock_code_t
-    (*KIICB_SOCK_CLOSE)(void* sock_context);
+    (*KII_CB_SOCK_CLOSE)(void* sock_context);
 
 
 #ifdef __cplusplus
