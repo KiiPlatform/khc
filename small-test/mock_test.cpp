@@ -99,12 +99,12 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kii_state_request_line(&http);
+  kii_state_req_line(&http);
   REQUIRE( http._state == KIIST_REQ_HEADER );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 
-  kii_state_request_header(&http);
+  kii_state_req_header(&http);
   REQUIRE( http._state == KIIST_REQ_HEADER_END );
   REQUIRE( http._result == KIIE_OK );
 
@@ -116,7 +116,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kii_state_request_header_end(&http);
+  kii_state_req_header_end(&http);
   REQUIRE( http._state == KIIST_REQ_BODY_READ );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
@@ -130,7 +130,7 @@ TEST_CASE( "HTTP minimal" ) {
     strncpy(buffer, body, strlen(body));
     return strlen(body);
   };
-  kii_state_request_body_read(&http);
+  kii_state_req_body_read(&http);
   REQUIRE( http._state == KIIST_REQ_BODY_SEND );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( http._read_req_end == 1 );
@@ -144,12 +144,12 @@ TEST_CASE( "HTTP minimal" ) {
     REQUIRE( strncmp(buffer, body, length) == 0 );
     return KIISOCK_OK;
   };
-  kii_state_request_body_send(&http);
+  kii_state_req_body_send(&http);
   REQUIRE( http._state == KIIST_RESP_HEADERS_ALLOC );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 
-  kii_state_response_headers_alloc(&http);
+  kii_state_resp_headers_alloc(&http);
   REQUIRE( http._state == KIIST_RESP_HEADERS_READ );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( *http._resp_header_buffer == '\0' );
@@ -167,7 +167,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kii_state_response_headers_read(&http);
+  kii_state_resp_headers_read(&http);
   REQUIRE( http._state == KIIST_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KIIE_OK );
@@ -187,7 +187,7 @@ TEST_CASE( "HTTP minimal" ) {
     return size * count;
   };
 
-  kii_state_response_headers_callback(&http);
+  kii_state_resp_headers_callback(&http);
   REQUIRE( http._state == KIIST_CLOSE );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KIIE_OK );
