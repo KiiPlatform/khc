@@ -26,7 +26,7 @@ typedef struct _ssl_context
     int socket;
 } ssl_context_t;
 
-kii_socket_code_t
+kii_sock_code_t
     s_connect_cb(void* socket_context, const char* host,
             unsigned int port)
 {
@@ -102,10 +102,10 @@ kii_socket_code_t
     ctx->socket = sock;
     ctx->ssl = ssl;
     ctx->ssl_ctx = ssl_ctx;
-    return KII_SOCKETC_OK;
+    return KIISOCK_OK;
 }
 
-kii_socket_code_t
+kii_sock_code_t
     s_send_cb(void* socket_context,
             const char* buffer,
             size_t length)
@@ -113,14 +113,14 @@ kii_socket_code_t
     ssl_context_t* ctx = (ssl_context_t*)socket_context;
     int ret = SSL_write(ctx->ssl, buffer, length);
     if (ret > 0) {
-        return KII_SOCKETC_OK;
+        return KIISOCK_OK;
     } else {
         printf("failed to send\n");
         return KII_SOCKETC_FAIL;
     }
 }
 
-kii_socket_code_t
+kii_sock_code_t
     s_recv_cb(void* socket_context,
             char* buffer,
             size_t length_to_read,
@@ -130,7 +130,7 @@ kii_socket_code_t
     int ret = SSL_read(ctx->ssl, buffer, length_to_read);
     if (ret > 0) {
         *out_actual_length = ret;
-        return KII_SOCKETC_OK;
+        return KIISOCK_OK;
     } else {
         printf("failed to receive:\n");
         /* TOOD: could be 0 on success? */
@@ -139,7 +139,7 @@ kii_socket_code_t
     }
 }
 
-kii_socket_code_t
+kii_sock_code_t
     s_close_cb(void* socket_context)
 {
     ssl_context_t* ctx = (ssl_context_t*)socket_context;
@@ -164,7 +164,7 @@ kii_socket_code_t
         return KII_SOCKETC_FAIL;
     }
     free(ctx);
-    return KII_SOCKETC_OK;
+    return KIISOCK_OK;
 }
 
 #ifdef __APPLE__

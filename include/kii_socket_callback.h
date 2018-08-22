@@ -7,20 +7,20 @@
 extern "C" {
 #endif
 
-typedef enum kii_socket_code_t {
+typedef enum kii_sock_code_t {
     /** Retrun this code when operation succeed. */
-    KII_SOCKETC_OK,
+    KIISOCK_OK,
 
     /** Return this code when operation failed. */
-    KII_SOCKETC_FAIL,
+    KIISOCK_FAIL,
 
     /** Return this code when operation is in progress.
      *
      *  SDK calls the callback again until the callbacks returns
-     *  KII_SOCKETC_OK or KII_SOCKETC_FAIL.
+     *  KIISOCK_OK or KII_SOCKETC_FAIL.
      */
-    KII_SOCKETC_AGAIN
-} kii_socket_code_t;
+    KIISOCK_AGAIN
+} kii_sock_code_t;
 
 /** Callback for connecting socket to server.
  * Applications must implement this callback in the target enviroment.
@@ -29,13 +29,13 @@ typedef enum kii_socket_code_t {
  * @param [in] host host name.
  * @param [in] port port number.
  * @return If connection is succeeded, applications need to return
- * KII_SOCKETC_OK. If connection is failed, applications need to
+ * KIISOCK_OK. If connection is failed, applications need to
  * return KII_SOCKETC_FAIL. If applications want to pend returning
  * success or fail, applications need to return KII_SOCKETC_AGAIN.
  */
-typedef kii_socket_code_t
-    (*KII_SOCKET_CONNECT_CB)
-    (void* socket_context, const char* host, unsigned int port);
+typedef kii_sock_code_t
+    (*KIICB_SOCK_CONNECT)
+    (void* sock_ctx, const char* host, unsigned int port);
 
 /** Callback for sending data to server.
  * Applications must implement this callback in the target enviroment.
@@ -45,14 +45,14 @@ typedef kii_socket_code_t
  * @param [in] length length of buffer.
 
  * @return If applications succeed to send data, applications need to
- * return KII_SOCKETC_OK. If connection is failed. applications need
+ * return KIISOCK_OK. If connection is failed. applications need
  * to return KII_SOCKETC__FAIL. If applications don't want to send
  * data, applications need to return KII_SOCKETC_AGAIN. In this case,
  * KiiThingSDK Embedded Core pass same data to this callback again.
  */
-typedef kii_socket_code_t
-    (*KII_SOCKET_SEND_CB)
-    (void* socket_context, const char* buffer, size_t length);
+typedef kii_sock_code_t
+    (*KIICB_SOCK_SEND)
+    (void* sock_ctx, const char* buffer, size_t length);
 
 /** Callback for receiving data from server.
  * Applications must implement this callback in the target enviroment.
@@ -62,16 +62,16 @@ typedef kii_socket_code_t
  * @param [in] length_to_read buffer size.
  * @param [out] out_actual_length actual set data size.
  * @return If applications succeed to receive data and set the data to
- * buffer, applications need to return KII_SOCKETC_OK. Applications
+ * buffer, applications need to return KIISOCK_OK. Applications
  * also set data size to out_actual_length. If applications fail,
  * applications need to return KII_HTTPC_FAIL. If applications want to
  * wait to receive data, applications need to return
  * KII_HTTPC_AGAIN. In this case, applications must not set receving
  * data to buffer if some data is received.
  */
-typedef kii_socket_code_t
-    (*KII_SOCKET_RECV_CB)
-    (void* socket_context, char* buffer, size_t length_to_read,
+typedef kii_sock_code_t
+    (*KIICB_SOCK_RECV)
+    (void* sock_ctx, char* buffer, size_t length_to_read,
      size_t* out_actual_length);
 
 /** Callback for closing socket.
@@ -80,13 +80,13 @@ typedef kii_socket_code_t
  * @param [in] socket_context context object.
  *
  * @return If applications succeed to close socket, applications need
- * to return KII_SOCKETC_OK. If applications fail to close socket,
+ * to return KIISOCK_OK. If applications fail to close socket,
  * applications need to return KII_SOCKETC_FAIL. If applications want
  * to pend returning success or fail, applications need to return
  * KII_SOCKETC_AGAIN.
  */
-typedef kii_socket_code_t
-    (*KII_SOCKET_CLOSE_CB)(void* socket_context);
+typedef kii_sock_code_t
+    (*KIICB_SOCK_CLOSE)(void* sock_context);
 
 
 #ifdef __cplusplus

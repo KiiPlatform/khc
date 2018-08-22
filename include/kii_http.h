@@ -9,9 +9,9 @@ extern "C"
 #include <stdio.h>
 #include "kii_socket_callback.h"
 
-typedef size_t (*WRITE_CALLBACK)(char *ptr, size_t size, size_t count, void *userdata);
-typedef size_t (*READ_CALLBACK)(char *buffer, size_t size, size_t count, void *userdata);
-typedef size_t (*HEADER_CALLBACK)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*KIICB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
+typedef size_t (*KIICB_READ)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*KIICB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
 
 typedef struct kii_slist {
   char* data;
@@ -27,32 +27,32 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_BODY_SIZE 1024
 
 typedef enum kii_http_param {
-  KII_PARAM_HOST,
-  KII_PARAM_PATH,
-  KII_PARAM_METHOD,
-  KII_PARAM_REQ_HEADERS
+  KIIPARAM_HOST,
+  KIIPARAM_PATH,
+  KIIPARAM_METHOD,
+  KIIPARAM_REQ_HEADERS
 } kii_http_param;
 
 typedef enum kii_http_state {
-  IDLE,
-  CONNECT,
-  REQUEST_LINE,
-  REQUEST_HEADER,
-  REQUEST_HEADER_SEND,
-  REQUEST_HEADER_SEND_CRLF,
-  REQUEST_HEADER_END,
-  REQUEST_BODY_READ,
-  REQUEST_BODY_SEND,
-  RESPONSE_HEADERS_ALLOC,
-  RESPONSE_HEADERS_REALLOC,
-  RESPONSE_HEADERS_READ,
-  RESPONSE_HEADERS_CALLBACK,
+  KIIST_IDLE,
+  KIIST_CONNECT,
+  KIIST_REQ_LINE,
+  KIIST_REQ_HEADER,
+  KIIST_REQ_HEADER_SEND,
+  KIIST_REQ_HEADER_SEND_CRLF,
+  KIIST_REQ_HEADER_END,
+  KIIST_REQ_BODY_READ,
+  KIIST_REQ_BODY_SEND,
+  KIIST_RESP_HEADERS_ALLOC,
+  KIIST_RESP_HEADERS_REALLOC,
+  KIIST_RESP_HEADERS_READ,
+  KIIST_RESP_HEADERS_CALLBACK,
   /** Process flagment of body obtaind when trying to find body boundary. */
-  RESPONSE_BODY_FLAGMENT,
-  RESPONSE_BODY_READ,
-  RESPONSE_BODY_CALLBACK,
-  CLOSE,
-  FINISHED,
+  KIIST_RESP_BODY_FLAGMENT,
+  KIIST_RESP_BODY_READ,
+  KIIST_RESP_BODY_CALLBACK,
+  KIIST_CLOSE,
+  KIIST_FINISHED,
 } kii_http_state;
 
 typedef enum kii_http_code {
@@ -68,102 +68,102 @@ typedef enum kii_http_code {
 } kii_http_code;
 
 typedef struct kii_http {
-  WRITE_CALLBACK write_callback;
-  void* write_data;
-  READ_CALLBACK read_callback;
-  void* read_data;
-  HEADER_CALLBACK header_callback;
-  void* header_data;
+  KIICB_WRITE _cb_write;
+  void* _write_data;
+  KIICB_READ _cb_read;
+  void* _read_data;
+  KIICB_HEADER _cb_header;
+  void* _header_data;
 
   /** Request header list */
-  kii_slist* request_headers;
+  kii_slist* _req_headers;
 
-  char* host;
-  char* path;
-  char* method;
+  char* _host;
+  char* _path;
+  char* _method;
 
   /** State machine */
-  kii_http_state state;
+  kii_http_state _state;
 
   /** Socket functions. */
-  KII_SOCKET_CONNECT_CB sc_connect_cb;
-  KII_SOCKET_SEND_CB sc_send_cb;
-  KII_SOCKET_RECV_CB sc_recv_cb;
-  KII_SOCKET_CLOSE_CB sc_close_cb;
+  KIICB_SOCK_CONNECT _cb_sock_connect;
+  KIICB_SOCK_SEND _cb_sock_send;
+  KIICB_SOCK_RECV _cb_sock_recv;
+  KIICB_SOCK_CLOSE _cb_sock_close;
   /**   Socket context. */
-  void* socket_context_connect;
-  void* socket_context_send;
-  void* socket_context_recv;
-  void* socket_context_close;
+  void* _sock_ctx_connect;
+  void* _sock_ctx_send;
+  void* _sock_ctx_recv;
+  void* _sock_ctx_close;
 
-  kii_slist* current_request_header;
+  kii_slist* _current_req_header;
 
   /** Request body buffer stream */
-  char read_buffer[READ_REQ_BUFFER_SIZE];
-  size_t read_size;
-  int read_request_end;
+  char _read_buffer[READ_REQ_BUFFER_SIZE];
+  size_t _read_size;
+  int _read_req_end;
 
   /** Response header buffer (Dynamic allocation) */
-  char* resp_header_buffer;
-  char* resp_header_buffer_current_pos;
-  size_t resp_header_buffer_size;
-  size_t resp_header_read_size;
+  char* _resp_header_buffer;
+  char* _resp_header_buffer_current_pos;
+  size_t _resp_header_buffer_size;
+  size_t _resp_header_read_size;
 
   /** Pointer to the double CRLF boundary in the resp_header_buffer */
-  char* body_boundary;
+  char* _body_boundary;
 
   /** Header callback */
-  char* cb_header_pos;
+  char* _cb_header_pos;
   /** Used to seek for CRFL effectively. */
-  size_t cb_header_remaining_size;
+  size_t _cb_header_remaining_size;
 
-  char* body_flagment;
-  size_t body_flagment_size;
-  int read_end;
+  char* _body_flagment;
+  size_t _body_flagment_size;
+  int _read_end;
 
-  char body_buffer[READ_BODY_SIZE];
-  size_t body_read_size;
+  char _body_buffer[READ_BODY_SIZE];
+  size_t _body_read_size;
 
-  kii_http_code result;
+  kii_http_code _result;
 } kii_http;
 
 kii_http_code kii_http_perform(kii_http* kii_http);
 
 kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, void* data);
 
-kii_http_code kii_http_set_sock_connect_cb(
+kii_http_code kii_http_set_cb_sock_connect(
   kii_http* kii_http,
-  KII_SOCKET_CONNECT_CB cb,
+  KIICB_SOCK_CONNECT cb,
   void* userdata);
 
-kii_http_code kii_http_set_sock_send_cb(
+kii_http_code kii_http_set_cb_sock_send(
   kii_http* kii_http,
-  KII_SOCKET_SEND_CB cb,
+  KIICB_SOCK_SEND cb,
   void* userdata);
 
-kii_http_code kii_http_set_sock_recv_cb(
+kii_http_code kii_http_set_cb_sock_recv(
   kii_http* kii_http,
-  KII_SOCKET_RECV_CB cb,
+  KIICB_SOCK_RECV cb,
   void* userdata);
 
-kii_http_code kii_http_set_read_cb(
+kii_http_code kii_http_set_cb_sock_close(
   kii_http* kii_http,
-  READ_CALLBACK cb,
+  KIICB_SOCK_CLOSE cb,
   void* userdata);
 
-kii_http_code kii_http_set_write_cb(
+kii_http_code kii_http_set_cb_read(
   kii_http* kii_http,
-  WRITE_CALLBACK cb,
+  KIICB_READ cb,
   void* userdata);
 
-kii_http_code kii_http_set_header_cb(
+kii_http_code kii_http_set_cb_write(
   kii_http* kii_http,
-  HEADER_CALLBACK cb,
+  KIICB_WRITE cb,
   void* userdata);
 
-kii_http_code kii_http_set_sock_close_cb(
+kii_http_code kii_http_set_cb_header(
   kii_http* kii_http,
-  KII_SOCKET_CLOSE_CB cb,
+  KIICB_HEADER cb,
   void* userdata);
 
 #ifdef __cplusplus

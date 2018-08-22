@@ -32,12 +32,12 @@ void kii_slist_free_all(kii_slist* slist) {
 }
 
 kii_http_code kii_http_perform(kii_http* kii_http) {
-  while(kii_http->state != FINISHED) {
-    state_handlers[kii_http->state](kii_http);
+  while(kii_http->_state != KIIST_FINISHED) {
+    state_handlers[kii_http->_state](kii_http);
   }
-  kii_http_code res = kii_http->result;
-  kii_http->state = IDLE;
-  kii_http->result = KIIE_OK;
+  kii_http_code res = kii_http->_result;
+  kii_http->_state = KIIST_IDLE;
+  kii_http->_result = KIIE_OK;
   
   return res;
 }
