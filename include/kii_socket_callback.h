@@ -17,7 +17,7 @@ typedef enum kii_sock_code_t {
     /** Return this code when operation is in progress.
      *
      *  SDK calls the callback again until the callbacks returns
-     *  KIISOCK_OK or KII_SOCKETC_FAIL.
+     *  KIISOCK_OK or KIISOCK_FAIL.
      */
     KIISOCK_AGAIN
 } kii_sock_code_t;
@@ -30,7 +30,7 @@ typedef enum kii_sock_code_t {
  * @param [in] port port number.
  * @return If connection is succeeded, applications need to return
  * KIISOCK_OK. If connection is failed, applications need to
- * return KII_SOCKETC_FAIL. If applications want to pend returning
+ * return KIISOCK_FAIL. If applications want to pend returning
  * success or fail, applications need to return KII_SOCKETC_AGAIN.
  */
 typedef kii_sock_code_t
@@ -81,7 +81,7 @@ typedef kii_sock_code_t
  *
  * @return If applications succeed to close socket, applications need
  * to return KIISOCK_OK. If applications fail to close socket,
- * applications need to return KII_SOCKETC_FAIL. If applications want
+ * applications need to return KIISOCK_FAIL. If applications want
  * to pend returning success or fail, applications need to return
  * KII_SOCKETC_AGAIN.
  */

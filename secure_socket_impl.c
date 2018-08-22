@@ -44,7 +44,7 @@ kii_sock_code_t
     if (servhost == NULL) {
         printf("failed to get host.\n");
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
     memset(&server, 0x00, sizeof(server));
     server.sin_family = AF_INET;
@@ -58,13 +58,13 @@ kii_sock_code_t
     if (sock < 0) {
         printf("failed to init socket.\n");
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 
     if (connect(sock, (struct sockaddr*) &server, sizeof(server)) == -1 ){
         printf("failed to connect socket.\n");
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 
     SSL_library_init();
@@ -72,21 +72,21 @@ kii_sock_code_t
     if (ssl_ctx == NULL){
         printf("failed to init ssl context.\n");
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 
     ssl = SSL_new(ssl_ctx);
     if (ssl == NULL){
         printf("failed to init ssl.\n");
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 
     ret = SSL_set_fd(ssl, sock);
     if (ret == 0){
         printf("failed to set fd.\n");
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 
     ret = SSL_connect(ssl);
@@ -96,7 +96,7 @@ kii_sock_code_t
         ERR_error_string_n(sslErr, sslErrStr, 120);
         printf("failed to connect: %s\n", sslErrStr);
         free(ctx);
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 
     ctx->socket = sock;
@@ -116,7 +116,7 @@ kii_sock_code_t
         return KIISOCK_OK;
     } else {
         printf("failed to send\n");
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 }
 
@@ -135,7 +135,7 @@ kii_sock_code_t
         printf("failed to receive:\n");
         /* TOOD: could be 0 on success? */
         *out_actual_length = 0;
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
 }
 
@@ -161,7 +161,7 @@ kii_sock_code_t
     SSL_CTX_free(ctx->ssl_ctx);
     if (ret != 1) {
         printf("failed to close:\n");
-        return KII_SOCKETC_FAIL;
+        return KIISOCK_FAIL;
     }
     free(ctx);
     return KIISOCK_OK;
