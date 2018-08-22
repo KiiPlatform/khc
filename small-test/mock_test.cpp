@@ -56,10 +56,10 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 TEST_CASE( "HTTP minimal" ) {
   kii_http http;
 
-  kii_http_set_param(&http, KIIPARAM_HOST, (char*)"api.kii.com");
-  kii_http_set_param(&http, KIIPARAM_METHOD, (char*)"GET");
-  kii_http_set_param(&http, KIIPARAM_PATH, (char*)"/api/apps");
-  kii_http_set_param(&http, KIIPARAM_REQ_HEADERS, NULL);
+  kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
+  kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
+  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
+  kii_http_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
   sock_ctx s_ctx;
   kii_http_set_cb_sock_connect(&http, cb_connect, &s_ctx);

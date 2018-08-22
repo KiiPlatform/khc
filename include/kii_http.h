@@ -27,10 +27,10 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_BODY_SIZE 1024
 
 typedef enum kii_http_param {
-  KIIPARAM_HOST,
-  KIIPARAM_PATH,
-  KIIPARAM_METHOD,
-  KIIPARAM_REQ_HEADERS
+  KII_PARAM_HOST,
+  KII_PARAM_PATH,
+  KII_PARAM_METHOD,
+  KII_PARAM_REQ_HEADERS
 } kii_http_param;
 
 typedef enum kii_http_state {

@@ -76,16 +76,16 @@ kii_http_code kii_http_set_cb_header(
 
 kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, void* data) {
   switch(param_type) {
-    case KIIPARAM_HOST:
+    case KII_PARAM_HOST:
       kii_http->_host = (char*)data;
       break;
-    case KIIPARAM_PATH:
+    case KII_PARAM_PATH:
       kii_http->_path = (char*)data;
       break;
-    case KIIPARAM_METHOD:
+    case KII_PARAM_METHOD:
       kii_http->_method = (char*)data;
       break;
-    case KIIPARAM_REQ_HEADERS:
+    case KII_PARAM_REQ_HEADERS:
       kii_http->_req_headers = (kii_slist*)data;
       break;
     default:
