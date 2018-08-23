@@ -31,7 +31,7 @@ TEST_CASE( "HTTP Get" ) {
 
   kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api-jp.kii.com");
   kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
-  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps/1234");
+  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"");
   kii_http_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
   ssl_context_t s_ctx;
@@ -60,9 +60,9 @@ TEST_CASE( "HTTP Get" ) {
   };
 
   io_ctx.on_write = [=](char *buffer, size_t size, size_t count, void *userdata) {
-    REQUIRE ( strncmp(buffer, "{}", 2) );
     REQUIRE ( size == 1);
     REQUIRE ( count == 2 );
+    REQUIRE ( strncmp(buffer, "{}", 2) == 0 );
     return size * count;
   };
 
@@ -103,9 +103,12 @@ TEST_CASE( "HTTP Get" ) {
     REQUIRE( http._result == KII_ERR_OK );
   }
 
-  REQUIRE ( http._state == KII_STATE_CLOSE );
+  REQUIRE ( http._state == KII_STATE_RESP_BODY_FLAGMENT );
   REQUIRE( http._result == KII_ERR_OK );
 
+  kii_state_resp_body_flagment(&http);
+  REQUIRE ( http._state == KII_STATE_CLOSE );
+  REQUIRE( http._result == KII_ERR_OK );
   // kii_http_code ret = kii_http_perform(&http);
   // REQUIRE( ret == KII_ERR_OK );
 
