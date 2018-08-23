@@ -123,7 +123,7 @@ void kii_state_connect(kii_http* kii_http) {
     return;
   }
   if (con_res == KIISOCK_FAIL) {
-    kii_http->_result = KII_ERR_SC_CONNECT;
+    kii_http->_result = KII_ERR_SOCK_CONNECT;
     kii_http->_state = KII_STATE_FINISHED;
     return;
   }
@@ -170,7 +170,7 @@ void kii_state_req_line(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_SEND;
+    kii_http->_result = KII_ERR_SOCK_SEND;
     return;
   } 
 }
@@ -207,7 +207,7 @@ void kii_state_req_header_send(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_SEND;
+    kii_http->_result = KII_ERR_SOCK_SEND;
     return;
   } 
 }
@@ -224,7 +224,7 @@ void kii_state_req_header_send_crlf(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_SEND;
+    kii_http->_result = KII_ERR_SOCK_SEND;
     return;
   } 
 }
@@ -241,7 +241,7 @@ void kii_state_req_header_end(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_SEND;
+    kii_http->_result = KII_ERR_SOCK_SEND;
     return;
   }
 }
@@ -271,7 +271,7 @@ void kii_state_req_body_send(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_SEND;
+    kii_http->_result = KII_ERR_SOCK_SEND;
     return;
   }
 }
@@ -342,7 +342,7 @@ void kii_state_resp_headers_read(kii_http* kii_http) {
     kii_http->_resp_header_buffer = NULL;
     kii_http->_resp_header_buffer_size = 0;
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_RECV;
+    kii_http->_result = KII_ERR_SOCK_RECV;
     return;
   }
 }
@@ -425,7 +425,7 @@ void kii_state_resp_body_read(kii_http* kii_http) {
   }
   if (read_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KII_ERR_SC_RECV;
+    kii_http->_result = KII_ERR_SOCK_RECV;
     return;
   }
 }
@@ -457,7 +457,7 @@ void kii_state_close(kii_http* kii_http) {
   }
   if (close_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_FINISHED;
-    kii_http->_result = KII_ERR_SC_CLOSE;
+    kii_http->_result = KII_ERR_SOCK_CLOSE;
     return;
   }
 }
