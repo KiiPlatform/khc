@@ -45,12 +45,16 @@ TEST_CASE( "HTTP Get" ) {
   kii_http_set_cb_write(&http, cb_write, &io_ctx);
   kii_http_set_cb_header(&http, cb_header, &io_ctx);
 
-  io_ctx.on_read = [=](char *buffer, size_t size, size_t count, void *userdata) {
+  int on_read_called = 0;
+  io_ctx.on_read = [=, &on_read_called](char *buffer, size_t size, size_t count, void *userdata) {
+    ++on_read_called;
     // No req body.
     return 0;
   };
 
-  io_ctx.on_header = [=](char *buffer, size_t size, size_t count, void *userdata) {
+  int on_header_called = 0;
+  io_ctx.on_header = [=, &on_header_called](char *buffer, size_t size, size_t count, void *userdata) {
+    ++on_header_called;
     // Ignore resp headers.
     char str[size*count + 1];
     strncpy(str, buffer, size*count);
@@ -59,58 +63,18 @@ TEST_CASE( "HTTP Get" ) {
     return size * count;
   };
 
-  io_ctx.on_write = [=](char *buffer, size_t size, size_t count, void *userdata) {
+  int on_write_called = 0;
+  io_ctx.on_write = [=, &on_write_called](char *buffer, size_t size, size_t count, void *userdata) {
+    ++on_write_called;
     REQUIRE ( size == 1);
     REQUIRE ( count == 2 );
     REQUIRE ( strncmp(buffer, "{}", 2) == 0 );
     return size * count;
   };
 
-  kii_state_idle(&http);
-  REQUIRE( http._state == KII_STATE_CONNECT );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_connect(&http);
-  REQUIRE( http._state == KII_STATE_REQ_LINE );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_req_line(&http);
-  REQUIRE( http._state == KII_STATE_REQ_HEADER );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_req_header(&http);
-  REQUIRE( http._state == KII_STATE_REQ_HEADER_END );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_req_header_end(&http);
-  REQUIRE( http._state == KII_STATE_REQ_BODY_READ );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_req_body_read(&http);
-  REQUIRE( http._state == KII_STATE_RESP_HEADERS_ALLOC );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_resp_headers_alloc(&http);
-  REQUIRE( http._state == KII_STATE_RESP_HEADERS_READ );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_resp_headers_read(&http);
-  REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  while (http._state == KII_STATE_RESP_HEADERS_CALLBACK) {
-    kii_state_resp_headers_callback(&http);
-    REQUIRE( http._result == KII_ERR_OK );
-  }
-
-  REQUIRE( http._state == KII_STATE_RESP_BODY_FLAGMENT );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_resp_body_flagment(&http);
-  REQUIRE( http._state == KII_STATE_CLOSE );
-  REQUIRE( http._result == KII_ERR_OK );
-
-  kii_state_close(&http);
-  REQUIRE( http._state == KII_STATE_FINISHED );
-  REQUIRE( http._result == KII_ERR_OK );
+  kii_http_code res = kii_http_perform(&http);
+  REQUIRE( res == KII_ERR_OK );
+  REQUIRE( on_read_called == 1 );
+  REQUIRE( on_header_called > 1 );
+  REQUIRE( on_write_called == 1 );
 }
