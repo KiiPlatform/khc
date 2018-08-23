@@ -19,6 +19,10 @@ else
 TESTCMD=$(TARGET)
 endif
 
+ifdef JUNIT
+TESTCMD+= -r junit -o $(TEST_RESULT)
+endif
+
 all: clean test
 
 $(LIB_BUILD_DIR): $(LIB_SRCS)
