@@ -3,7 +3,7 @@
 #include <string.h>
 #include "catch.hpp"
 #include <kii_http.h>
-#include "../../src/kii_http_impl.h"
+#include "kii_http_impl.h"
 
 typedef struct sock_ctx {
   std::function<kii_sock_code_t(void* socket_context, const char* host, unsigned int port)> on_connect;

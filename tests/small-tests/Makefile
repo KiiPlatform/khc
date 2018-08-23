@@ -4,7 +4,7 @@ LIB_SRCS+=$(wildcard ../../include/*.h)
 LIB_BUILD_DIR=build-http
 
 TARGET=./testapp
-INCLUDES=-I. -I$(LIB_BUILD_DIR)/include
+INCLUDES=-I. -I.. -I../../src -I$(LIB_BUILD_DIR)/include
 LIBS_DIR=-L$(LIB_BUILD_DIR)/lib
 
 LIBS=-lkiihttp
