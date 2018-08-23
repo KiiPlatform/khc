@@ -9,9 +9,9 @@ extern "C"
 #include <stdio.h>
 #include "kii_socket_callback.h"
 
-typedef size_t (*KIICB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
-typedef size_t (*KIICB_READ)(char *buffer, size_t size, size_t count, void *userdata);
-typedef size_t (*KIICB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*KII_CB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
+typedef size_t (*KII_CB_READ)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*KII_CB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
 
 typedef struct kii_slist {
   char* data;
@@ -27,52 +27,52 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_BODY_SIZE 1024
 
 typedef enum kii_http_param {
-  KIIPARAM_HOST,
-  KIIPARAM_PATH,
-  KIIPARAM_METHOD,
-  KIIPARAM_REQ_HEADERS
+  KII_PARAM_HOST,
+  KII_PARAM_PATH,
+  KII_PARAM_METHOD,
+  KII_PARAM_REQ_HEADERS
 } kii_http_param;
 
 typedef enum kii_http_state {
-  KIIST_IDLE,
-  KIIST_CONNECT,
-  KIIST_REQ_LINE,
-  KIIST_REQ_HEADER,
-  KIIST_REQ_HEADER_SEND,
-  KIIST_REQ_HEADER_SEND_CRLF,
-  KIIST_REQ_HEADER_END,
-  KIIST_REQ_BODY_READ,
-  KIIST_REQ_BODY_SEND,
-  KIIST_RESP_HEADERS_ALLOC,
-  KIIST_RESP_HEADERS_REALLOC,
-  KIIST_RESP_HEADERS_READ,
-  KIIST_RESP_HEADERS_CALLBACK,
+  KII_STATE_IDLE,
+  KII_STATE_CONNECT,
+  KII_STATE_REQ_LINE,
+  KII_STATE_REQ_HEADER,
+  KII_STATE_REQ_HEADER_SEND,
+  KII_STATE_REQ_HEADER_SEND_CRLF,
+  KII_STATE_REQ_HEADER_END,
+  KII_STATE_REQ_BODY_READ,
+  KII_STATE_REQ_BODY_SEND,
+  KII_STATE_RESP_HEADERS_ALLOC,
+  KII_STATE_RESP_HEADERS_REALLOC,
+  KII_STATE_RESP_HEADERS_READ,
+  KII_STATE_RESP_HEADERS_CALLBACK,
   /** Process flagment of body obtaind when trying to find body boundary. */
-  KIIST_RESP_BODY_FLAGMENT,
-  KIIST_RESP_BODY_READ,
-  KIIST_RESP_BODY_CALLBACK,
-  KIIST_CLOSE,
-  KIIST_FINISHED,
+  KII_STATE_RESP_BODY_FLAGMENT,
+  KII_STATE_RESP_BODY_READ,
+  KII_STATE_RESP_BODY_CALLBACK,
+  KII_STATE_CLOSE,
+  KII_STATE_FINISHED,
 } kii_http_state;
 
 typedef enum kii_http_code {
-  KIIE_OK,
-  KIIE_SC_CONNECT,
-  KIIE_SC_CLOSE,
-  KIIE_SC_SEND,
-  KIIE_SC_RECV,
-  KIIE_HEADER_CALLBACK,
-  KIIE_WRITE_CALLBACK,
-  KIIE_ALLOCATION,
-  KIIE_FAIL,
+  KII_ERR_OK,
+  KII_ERR_SOCK_CONNECT,
+  KII_ERR_SOCK_CLOSE,
+  KII_ERR_SOCK_SEND,
+  KII_ERR_SOCK_RECV,
+  KII_ERR_HEADER_CALLBACK,
+  KII_ERR_WRITE_CALLBACK,
+  KII_ERR_ALLOCATION,
+  KII_ERR_FAIL,
 } kii_http_code;
 
 typedef struct kii_http {
-  KIICB_WRITE _cb_write;
+  KII_CB_WRITE _cb_write;
   void* _write_data;
-  KIICB_READ _cb_read;
+  KII_CB_READ _cb_read;
   void* _read_data;
-  KIICB_HEADER _cb_header;
+  KII_CB_HEADER _cb_header;
   void* _header_data;
 
   /** Request header list */
@@ -86,10 +86,10 @@ typedef struct kii_http {
   kii_http_state _state;
 
   /** Socket functions. */
-  KIICB_SOCK_CONNECT _cb_sock_connect;
-  KIICB_SOCK_SEND _cb_sock_send;
-  KIICB_SOCK_RECV _cb_sock_recv;
-  KIICB_SOCK_CLOSE _cb_sock_close;
+  KII_CB_SOCK_CONNECT _cb_sock_connect;
+  KII_CB_SOCK_SEND _cb_sock_send;
+  KII_CB_SOCK_RECV _cb_sock_recv;
+  KII_CB_SOCK_CLOSE _cb_sock_close;
   /**   Socket context. */
   void* _sock_ctx_connect;
   void* _sock_ctx_send;
@@ -133,37 +133,37 @@ kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, 
 
 kii_http_code kii_http_set_cb_sock_connect(
   kii_http* kii_http,
-  KIICB_SOCK_CONNECT cb,
+  KII_CB_SOCK_CONNECT cb,
   void* userdata);
 
 kii_http_code kii_http_set_cb_sock_send(
   kii_http* kii_http,
-  KIICB_SOCK_SEND cb,
+  KII_CB_SOCK_SEND cb,
   void* userdata);
 
 kii_http_code kii_http_set_cb_sock_recv(
   kii_http* kii_http,
-  KIICB_SOCK_RECV cb,
+  KII_CB_SOCK_RECV cb,
   void* userdata);
 
 kii_http_code kii_http_set_cb_sock_close(
   kii_http* kii_http,
-  KIICB_SOCK_CLOSE cb,
+  KII_CB_SOCK_CLOSE cb,
   void* userdata);
 
 kii_http_code kii_http_set_cb_read(
   kii_http* kii_http,
-  KIICB_READ cb,
+  KII_CB_READ cb,
   void* userdata);
 
 kii_http_code kii_http_set_cb_write(
   kii_http* kii_http,
-  KIICB_WRITE cb,
+  KII_CB_WRITE cb,
   void* userdata);
 
 kii_http_code kii_http_set_cb_header(
   kii_http* kii_http,
-  KIICB_HEADER cb,
+  KII_CB_HEADER cb,
   void* userdata);
 
 #ifdef __cplusplus

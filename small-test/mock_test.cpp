@@ -56,10 +56,10 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 TEST_CASE( "HTTP minimal" ) {
   kii_http http;
 
-  kii_http_set_param(&http, KIIPARAM_HOST, (char*)"api.kii.com");
-  kii_http_set_param(&http, KIIPARAM_METHOD, (char*)"GET");
-  kii_http_set_param(&http, KIIPARAM_PATH, (char*)"/api/apps");
-  kii_http_set_param(&http, KIIPARAM_REQ_HEADERS, NULL);
+  kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
+  kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
+  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
+  kii_http_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
   sock_ctx s_ctx;
   kii_http_set_cb_sock_connect(&http, cb_connect, &s_ctx);
@@ -73,8 +73,8 @@ TEST_CASE( "HTTP minimal" ) {
   kii_http_set_cb_header(&http, cb_header, &io_ctx);
 
   kii_state_idle(&http);
-  REQUIRE( http._state == KIIST_CONNECT );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_CONNECT );
+  REQUIRE( http._result == KII_ERR_OK );
 
   bool called = false;
   s_ctx.on_connect = [=, &called](void* socket_context, const char* host, unsigned int port) {
@@ -86,8 +86,8 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_connect(&http);
-  REQUIRE( http._state == KIIST_REQ_LINE );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_REQ_LINE );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
   called = false;
@@ -100,13 +100,13 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_req_line(&http);
-  REQUIRE( http._state == KIIST_REQ_HEADER );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_REQ_HEADER );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
   kii_state_req_header(&http);
-  REQUIRE( http._state == KIIST_REQ_HEADER_END );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_REQ_HEADER_END );
+  REQUIRE( http._result == KII_ERR_OK );
 
   called = false;
   s_ctx.on_send = [=, &called](void* socket_context, const char* buffer, size_t length) {
@@ -117,8 +117,8 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_req_header_end(&http);
-  REQUIRE( http._state == KIIST_REQ_BODY_READ );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_REQ_BODY_READ );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
   called = false;
@@ -131,8 +131,8 @@ TEST_CASE( "HTTP minimal" ) {
     return strlen(body);
   };
   kii_state_req_body_read(&http);
-  REQUIRE( http._state == KIIST_REQ_BODY_SEND );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_REQ_BODY_SEND );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( http._read_req_end == 1 );
   REQUIRE( called );
 
@@ -145,13 +145,13 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
   kii_state_req_body_send(&http);
-  REQUIRE( http._state == KIIST_RESP_HEADERS_ALLOC );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_ALLOC );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
   kii_state_resp_headers_alloc(&http);
-  REQUIRE( http._state == KIIST_RESP_HEADERS_READ );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_READ );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( *http._resp_header_buffer == '\0' );
   REQUIRE( http._resp_header_buffer == http._resp_header_buffer_current_pos );
   REQUIRE (http._resp_header_buffer_size == 1024 );
@@ -168,9 +168,9 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_resp_headers_read(&http);
-  REQUIRE( http._state == KIIST_RESP_HEADERS_CALLBACK );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._result == KII_ERR_OK );
   // FIXME: Multiple Declaration.
   const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
   REQUIRE( http._resp_header_read_size == strlen(status_line) );
@@ -188,9 +188,9 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_resp_headers_callback(&http);
-  REQUIRE( http._state == KIIST_CLOSE );
+  REQUIRE( http._state == KII_STATE_CLOSE );
   REQUIRE( http._read_end == 1 );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
   called = false;
@@ -199,7 +199,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
   kii_state_close(&http);
-  REQUIRE( http._state == KIIST_FINISHED );
-  REQUIRE( http._result == KIIE_OK );
+  REQUIRE( http._state == KII_STATE_FINISHED );
+  REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 }
