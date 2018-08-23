@@ -81,7 +81,7 @@ TEST_CASE( "HTTP minimal" ) {
     called = true;
     REQUIRE( strncmp(host, "api.kii.com", strlen("api.kii.com")) == 0 );
     REQUIRE( strlen(host) == strlen("api.kii.com") );
-    REQUIRE( port == 8080 );
+    REQUIRE( port == 443 );
     return KIISOCK_OK;
   };
 
@@ -93,7 +93,7 @@ TEST_CASE( "HTTP minimal" ) {
   called = false;
   s_ctx.on_send = [=, &called](void* socket_context, const char* buffer, size_t length) {
     called = true;
-    const char req_line[] = "GET https://api.kii.com/api/apps HTTP 1.0\r\n";
+    const char req_line[] = "GET https://api.kii.com/api/apps HTTP/1.0\r\n";
     REQUIRE( length == strlen(req_line) );
     REQUIRE( strncmp(buffer, req_line, length) == 0 );
     return KIISOCK_OK;
@@ -160,7 +160,7 @@ TEST_CASE( "HTTP minimal" ) {
   s_ctx.on_recv = [=, &called](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
     REQUIRE( length_to_read == 1023 );
-    const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
+    const char status_line[] = "HTTP/1.0 200 OK\r\n\r\n";
     size_t len = strlen(status_line);
     strncpy(buffer, status_line, len);
     *out_actual_length = len;
@@ -172,14 +172,14 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KII_ERR_OK );
   // FIXME: Multiple Declaration.
-  const char status_line[] = "HTTP 1.0 200 OK\r\n\r\n";
+  const char status_line[] = "HTTP/1.0 200 OK\r\n\r\n";
   REQUIRE( http._resp_header_read_size == strlen(status_line) );
   REQUIRE( called );
 
   called = false;
   io_ctx.on_header = [=, &called](char *buffer, size_t size, size_t count, void *userdata) {
     called = true;
-    const char status_line[] = "HTTP 1.0 200 OK";
+    const char status_line[] = "HTTP/1.0 200 OK";
     size_t len = strlen(status_line);
     REQUIRE( size == 1);
     REQUIRE( count == len );
