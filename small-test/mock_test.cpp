@@ -73,7 +73,7 @@ TEST_CASE( "HTTP minimal" ) {
   kii_http_set_cb_header(&http, cb_header, &io_ctx);
 
   kii_state_idle(&http);
-  REQUIRE( http._state == KIIST_CONNECT );
+  REQUIRE( http._state == KII_STATE_CONNECT );
   REQUIRE( http._result == KIIE_OK );
 
   bool called = false;
@@ -86,7 +86,7 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_connect(&http);
-  REQUIRE( http._state == KIIST_REQ_LINE );
+  REQUIRE( http._state == KII_STATE_REQ_LINE );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 
@@ -100,12 +100,12 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_req_line(&http);
-  REQUIRE( http._state == KIIST_REQ_HEADER );
+  REQUIRE( http._state == KII_STATE_REQ_HEADER );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 
   kii_state_req_header(&http);
-  REQUIRE( http._state == KIIST_REQ_HEADER_END );
+  REQUIRE( http._state == KII_STATE_REQ_HEADER_END );
   REQUIRE( http._result == KIIE_OK );
 
   called = false;
@@ -117,7 +117,7 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_req_header_end(&http);
-  REQUIRE( http._state == KIIST_REQ_BODY_READ );
+  REQUIRE( http._state == KII_STATE_REQ_BODY_READ );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 
@@ -131,7 +131,7 @@ TEST_CASE( "HTTP minimal" ) {
     return strlen(body);
   };
   kii_state_req_body_read(&http);
-  REQUIRE( http._state == KIIST_REQ_BODY_SEND );
+  REQUIRE( http._state == KII_STATE_REQ_BODY_SEND );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( http._read_req_end == 1 );
   REQUIRE( called );
@@ -145,12 +145,12 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
   kii_state_req_body_send(&http);
-  REQUIRE( http._state == KIIST_RESP_HEADERS_ALLOC );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_ALLOC );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 
   kii_state_resp_headers_alloc(&http);
-  REQUIRE( http._state == KIIST_RESP_HEADERS_READ );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_READ );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( *http._resp_header_buffer == '\0' );
   REQUIRE( http._resp_header_buffer == http._resp_header_buffer_current_pos );
@@ -168,7 +168,7 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_resp_headers_read(&http);
-  REQUIRE( http._state == KIIST_RESP_HEADERS_CALLBACK );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KIIE_OK );
   // FIXME: Multiple Declaration.
@@ -188,7 +188,7 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   kii_state_resp_headers_callback(&http);
-  REQUIRE( http._state == KIIST_CLOSE );
+  REQUIRE( http._state == KII_STATE_CLOSE );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
@@ -199,7 +199,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
   kii_state_close(&http);
-  REQUIRE( http._state == KIIST_FINISHED );
+  REQUIRE( http._state == KII_STATE_FINISHED );
   REQUIRE( http._result == KIIE_OK );
   REQUIRE( called );
 }
