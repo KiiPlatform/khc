@@ -130,7 +130,7 @@ void kii_state_connect(kii_http* kii_http) {
 }
 
 static const char schema[] = "https://";
-static const char http_version[] = "HTTP 1.0\r\n";
+static const char http_version[] = "HTTP/1.0\r\n";
 
 static size_t request_line_len(kii_http* kii_http) {
   char* method = kii_http->_method;
