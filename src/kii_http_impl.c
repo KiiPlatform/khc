@@ -11,7 +11,7 @@ kii_http_code kii_http_set_cb_sock_connect(
 {
   kii_http->_cb_sock_connect = cb;
   kii_http->_sock_ctx_connect = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_cb_sock_send(
@@ -21,7 +21,7 @@ kii_http_code kii_http_set_cb_sock_send(
 {
   kii_http->_cb_sock_send = cb;
   kii_http->_sock_ctx_send = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_cb_sock_recv(
@@ -31,7 +31,7 @@ kii_http_code kii_http_set_cb_sock_recv(
 {
   kii_http->_cb_sock_recv = cb;
   kii_http->_sock_ctx_recv = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_cb_sock_close(
@@ -41,7 +41,7 @@ kii_http_code kii_http_set_cb_sock_close(
 {
   kii_http->_cb_sock_close = cb;
   kii_http->_sock_ctx_close = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_cb_read(
@@ -51,7 +51,7 @@ kii_http_code kii_http_set_cb_read(
 {
   kii_http->_cb_read = cb;
   kii_http->_read_data = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_cb_write(
@@ -61,7 +61,7 @@ kii_http_code kii_http_set_cb_write(
 {
   kii_http->_cb_write = cb;
   kii_http->_write_data = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_cb_header(
@@ -71,7 +71,7 @@ kii_http_code kii_http_set_cb_header(
 {
   kii_http->_cb_header = cb;
   kii_http->_header_data = userdata;
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, void* data) {
@@ -89,9 +89,9 @@ kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, 
       kii_http->_req_headers = (kii_slist*)data;
       break;
     default:
-      return KIIE_FAIL;
+      return KII_ERR_FAIL;
   }
-  return KIIE_OK;
+  return KII_ERR_OK;
 }
 
 void kii_state_idle(kii_http* kii_http) {
@@ -109,7 +109,7 @@ void kii_state_idle(kii_http* kii_http) {
   kii_http->_read_end = 0;
   kii_http->_read_size = 0;
   kii_http->_resp_header_read_size = 0;
-  kii_http->_result = KIIE_OK;
+  kii_http->_result = KII_ERR_OK;
   return;
 }
 
@@ -123,7 +123,7 @@ void kii_state_connect(kii_http* kii_http) {
     return;
   }
   if (con_res == KIISOCK_FAIL) {
-    kii_http->_result = KIIE_SC_CONNECT;
+    kii_http->_result = KII_ERR_SC_CONNECT;
     kii_http->_state = KII_STATE_FINISHED;
     return;
   }
@@ -170,7 +170,7 @@ void kii_state_req_line(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_SEND;
+    kii_http->_result = KII_ERR_SC_SEND;
     return;
   } 
 }
@@ -207,7 +207,7 @@ void kii_state_req_header_send(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_SEND;
+    kii_http->_result = KII_ERR_SC_SEND;
     return;
   } 
 }
@@ -224,7 +224,7 @@ void kii_state_req_header_send_crlf(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_SEND;
+    kii_http->_result = KII_ERR_SC_SEND;
     return;
   } 
 }
@@ -241,7 +241,7 @@ void kii_state_req_header_end(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_SEND;
+    kii_http->_result = KII_ERR_SC_SEND;
     return;
   }
 }
@@ -271,7 +271,7 @@ void kii_state_req_body_send(kii_http* kii_http) {
   }
   if (send_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_SEND;
+    kii_http->_result = KII_ERR_SC_SEND;
     return;
   }
 }
@@ -280,7 +280,7 @@ void kii_state_resp_headers_alloc(kii_http* kii_http) {
   kii_http->_resp_header_buffer = malloc(READ_RESP_HEADER_SIZE);
   if (kii_http->_resp_header_buffer == NULL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_ALLOCATION;
+    kii_http->_result = KII_ERR_ALLOCATION;
     return;
   }
   memset(kii_http->_resp_header_buffer, '\0', READ_RESP_HEADER_SIZE);
@@ -297,7 +297,7 @@ void kii_state_resp_headers_realloc(kii_http* kii_http) {
     kii_http->_resp_header_buffer = NULL;
     kii_http->_resp_header_buffer_size = 0;
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_ALLOCATION;
+    kii_http->_result = KII_ERR_ALLOCATION;
     return;
   }
   // Pointer: last part newly allocated.
@@ -342,7 +342,7 @@ void kii_state_resp_headers_read(kii_http* kii_http) {
     kii_http->_resp_header_buffer = NULL;
     kii_http->_resp_header_buffer_size = 0;
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_RECV;
+    kii_http->_result = KII_ERR_SC_RECV;
     return;
   }
 }
@@ -354,7 +354,7 @@ void kii_state_resp_headers_callback(kii_http* kii_http) {
     kii_http->_cb_header(kii_http->_cb_header_pos, 1, header_size, kii_http->_header_data);
   if (header_written != header_size) { // Error in callback function.
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_HEADER_CALLBACK;
+    kii_http->_result = KII_ERR_HEADER_CALLBACK;
     free(kii_http->_resp_header_buffer);
     kii_http->_resp_header_buffer = NULL;
     kii_http->_resp_header_buffer_size = 0;
@@ -396,7 +396,7 @@ void kii_state_resp_body_flagment(kii_http* kii_http) {
   kii_http->_resp_header_buffer_size = 0;
   if (written != kii_http->_body_flagment_size) { // Error in write callback.
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_WRITE_CALLBACK;
+    kii_http->_result = KII_ERR_WRITE_CALLBACK;
     return;
   }
   if (kii_http->_read_end == 1) {
@@ -425,7 +425,7 @@ void kii_state_resp_body_read(kii_http* kii_http) {
   }
   if (read_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_SC_RECV;
+    kii_http->_result = KII_ERR_SC_RECV;
     return;
   }
 }
@@ -434,7 +434,7 @@ void kii_state_resp_body_callback(kii_http* kii_http) {
   size_t written = kii_http->_cb_write(kii_http->_body_buffer, 1, kii_http->_body_read_size, kii_http->_write_data);
   if (written < kii_http->_body_read_size) { // Error in write callback.
     kii_http->_state = KII_STATE_CLOSE;
-    kii_http->_result = KIIE_WRITE_CALLBACK;
+    kii_http->_result = KII_ERR_WRITE_CALLBACK;
     return;
   }
   if (kii_http->_read_end == 1) {
@@ -449,7 +449,7 @@ void kii_state_close(kii_http* kii_http) {
   kii_sock_code_t close_res = kii_http->_cb_sock_close(kii_http->_sock_ctx_close);
   if (close_res == KIISOCK_OK) {
     kii_http->_state = KII_STATE_FINISHED;
-    kii_http->_result = KIIE_OK;
+    kii_http->_result = KII_ERR_OK;
     return;
   }
   if (close_res == KIISOCK_AGAIN) {
@@ -457,7 +457,7 @@ void kii_state_close(kii_http* kii_http) {
   }
   if (close_res == KIISOCK_FAIL) {
     kii_http->_state = KII_STATE_FINISHED;
-    kii_http->_result = KIIE_SC_CLOSE;
+    kii_http->_result = KII_ERR_SC_CLOSE;
     return;
   }
 }
