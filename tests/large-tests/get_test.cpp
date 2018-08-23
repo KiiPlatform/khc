@@ -83,12 +83,12 @@ TEST_CASE( "HTTP Get" ) {
   REQUIRE( http._result == KII_ERR_OK );
 
   kii_state_req_body_read(&http);
-  REQUIRE( http._state == KII_STATE_REQ_BODY_SEND );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_ALLOC );
   REQUIRE( http._result == KII_ERR_OK );
 
-  kii_state_req_body_send(&http);
-  REQUIRE( http._state == KII_STATE_CLOSE );
-  REQUIRE( http._result == KII_ERR_SOCK_SEND );
+  kii_state_resp_headers_alloc(&http);
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_READ );
+  REQUIRE( http._result == KII_ERR_OK );
   // kii_http_code ret = kii_http_perform(&http);
   // REQUIRE( ret == KII_ERR_OK );
 

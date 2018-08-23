@@ -249,7 +249,11 @@ void kii_state_req_header_end(kii_http* kii_http) {
 void kii_state_req_body_read(kii_http* kii_http) {
   kii_http->_read_size = kii_http->_cb_read(kii_http->_read_buffer, 1, READ_BODY_SIZE, kii_http->_read_data);
   // TODO: handle read failure. let return signed value?
-  kii_http->_state = KII_STATE_REQ_BODY_SEND;
+  if (kii_http->_read_size > 0) {
+    kii_http->_state = KII_STATE_REQ_BODY_SEND;
+  } else {
+    kii_http->_state = KII_STATE_RESP_HEADERS_ALLOC;
+  }
   if (kii_http->_read_size < READ_BODY_SIZE) {
     kii_http->_read_req_end = 1;
   }
