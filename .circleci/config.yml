@@ -6,6 +6,9 @@ jobs:
 
     steps:
       - checkout
-      - run: cd tests/small-tests && MEMCHECK=1 make
+      - run: cd tests/small-tests && MEMCHECK=1 JUNIT=1 make
       - store_test_results:
           path: tests/small-tests/test-results
+      - run: cd tests/large-tests && MEMCHECK=1 JUNIT=1 make
+      - store_test_results:
+          path: tests/large-tests/test-results
