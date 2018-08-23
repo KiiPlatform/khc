@@ -95,7 +95,7 @@ TEST_CASE( "HTTP Get" ) {
   REQUIRE( http._result == KII_ERR_OK );
 
   kii_state_resp_headers_read(&http);
-  REQUIRE ( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
+  REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._result == KII_ERR_OK );
 
   while (http._state == KII_STATE_RESP_HEADERS_CALLBACK) {
@@ -103,13 +103,14 @@ TEST_CASE( "HTTP Get" ) {
     REQUIRE( http._result == KII_ERR_OK );
   }
 
-  REQUIRE ( http._state == KII_STATE_RESP_BODY_FLAGMENT );
+  REQUIRE( http._state == KII_STATE_RESP_BODY_FLAGMENT );
   REQUIRE( http._result == KII_ERR_OK );
 
   kii_state_resp_body_flagment(&http);
-  REQUIRE ( http._state == KII_STATE_CLOSE );
+  REQUIRE( http._state == KII_STATE_CLOSE );
   REQUIRE( http._result == KII_ERR_OK );
-  // kii_http_code ret = kii_http_perform(&http);
-  // REQUIRE( ret == KII_ERR_OK );
 
+  kii_state_close(&http);
+  REQUIRE( http._state == KII_STATE_FINISHED );
+  REQUIRE( http._result == KII_ERR_OK );
 }
