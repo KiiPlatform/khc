@@ -1,6 +1,6 @@
-LIB_SRCS=$(wildcard ../src/*.c)
-LIB_SRCS+=$(wildcard ../src/*.h)
-LIB_SRCS+=$(wildcard ../include/*.h)
+LIB_SRCS=$(wildcard ../../src/*.c)
+LIB_SRCS+=$(wildcard ../../src/*.h)
+LIB_SRCS+=$(wildcard ../../include/*.h)
 LIB_BUILD_DIR=build-http
 
 TARGET=./testapp
@@ -22,7 +22,7 @@ all: clean test
 
 $(LIB_BUILD_DIR): $(LIB_SRCS)
 	mkdir -p $(LIB_BUILD_DIR)
-	cd $(LIB_BUILD_DIR) && cmake -DCMAKE_INSTALL_PREFIX=. ../.. && make install
+	cd $(LIB_BUILD_DIR) && cmake -DCMAKE_INSTALL_PREFIX=. ../../.. && make install
 
 $(TARGET): $(SRCS) $(LIB_BUILD_DIR)
 	g++ -g $(SRCS) $(LIBS_DIR) $(LIBS) $(INCLUDES) -o $(TARGET) -std=c++11
