@@ -114,7 +114,7 @@ void kii_state_idle(kii_http* kii_http) {
 }
 
 void kii_state_connect(kii_http* kii_http) {
-  kii_sock_code_t con_res = kii_http->_cb_sock_connect(kii_http->_sock_ctx_connect, kii_http->_host, 8080);
+  kii_sock_code_t con_res = kii_http->_cb_sock_connect(kii_http->_sock_ctx_connect, kii_http->_host, 443);
   if (con_res == KIISOCK_OK) {
     kii_http->_state = KII_STATE_REQ_LINE;
     return;
