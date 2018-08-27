@@ -1,34 +1,27 @@
+#ifndef __http_test__
+#define __http_test__
 
 using namespace std;
 
 #include <vector>
 #include <string>
+#include <istream>
 #include <sstream>
-
-using namespace std;
 
 namespace http_test {
 
-struct Resp {
-  vector<string> headers;
-  string body;
-  string to_string();
-  istringstream to_istream();
+std::istream &read_header(std::istream &in, std::string &out);
+class Resp;
+
+}
+
+struct http_test::Resp {
+  std::vector<std::string> headers;
+  std::string body;
+  std::string to_string();
+  std::istringstream to_istringstream();
+  Resp();
+  Resp(std::istream& is);
 };
 
-string Resp::to_string() {
-  ostringstream o;
-  for (string h : headers) {
-    o << h;
-    o << "\r\n";
-  }
-  o << "\r\n";
-  o << body;
-  return o.str();
-}
-
-istringstream Resp::to_istream() {
-  return istringstream(this->to_string());
-}
-
-}
+#endif
