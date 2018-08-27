@@ -4,6 +4,8 @@
 #include "catch.hpp"
 #include <kii_http.h>
 #include "kii_http_impl.h"
+#include "http_test.h"
+#include <sstream>
 
 typedef struct sock_ctx {
   std::function<kii_sock_code_t(void* socket_context, const char* host, unsigned int port)> on_connect;
@@ -55,6 +57,9 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 
 TEST_CASE( "HTTP minimal" ) {
   kii_http http;
+
+  http_test::Resp resp;
+  resp.headers = { "HTTP/1.0 200 OK" };
 
   kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
   kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
@@ -157,13 +162,10 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE (http._resp_header_buffer_size == 1024 );
 
   called = false;
-  s_ctx.on_recv = [=, &called](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+  s_ctx.on_recv = [=, &called, &resp](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
     REQUIRE( length_to_read == 1023 );
-    const char status_line[] = "HTTP/1.0 200 OK\r\n\r\n";
-    size_t len = strlen(status_line);
-    strncpy(buffer, status_line, len);
-    *out_actual_length = len;
+    *out_actual_length = resp.to_istream().readsome(buffer, length_to_read);
     return KIISOCK_OK;
   };
 
@@ -171,15 +173,15 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KII_ERR_OK );
-  // FIXME: Multiple Declaration.
-  const char status_line[] = "HTTP/1.0 200 OK\r\n\r\n";
-  REQUIRE( http._resp_header_read_size == strlen(status_line) );
+  char buffer[1024];
+  size_t len = resp.to_istream().readsome((char*)&buffer, 1023);
+  REQUIRE( http._resp_header_read_size == len );
   REQUIRE( called );
 
   called = false;
-  io_ctx.on_header = [=, &called](char *buffer, size_t size, size_t count, void *userdata) {
+  io_ctx.on_header = [=, &called, &resp](char *buffer, size_t size, size_t count, void *userdata) {
     called = true;
-    const char status_line[] = "HTTP/1.0 200 OK";
+    const char* status_line = resp.headers[0].c_str();
     size_t len = strlen(status_line);
     REQUIRE( size == 1);
     REQUIRE( count == len );
