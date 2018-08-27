@@ -114,7 +114,7 @@ void kii_state_idle(kii_http* kii_http) {
 }
 
 void kii_state_connect(kii_http* kii_http) {
-  kii_sock_code_t con_res = kii_http->_cb_sock_connect(kii_http->_sock_ctx_connect, kii_http->_host, 8080);
+  kii_sock_code_t con_res = kii_http->_cb_sock_connect(kii_http->_sock_ctx_connect, kii_http->_host, 443);
   if (con_res == KIISOCK_OK) {
     kii_http->_state = KII_STATE_REQ_LINE;
     return;
@@ -130,7 +130,7 @@ void kii_state_connect(kii_http* kii_http) {
 }
 
 static const char schema[] = "https://";
-static const char http_version[] = "HTTP 1.0\r\n";
+static const char http_version[] = "HTTP/1.0\r\n";
 
 static size_t request_line_len(kii_http* kii_http) {
   char* method = kii_http->_method;
@@ -249,7 +249,11 @@ void kii_state_req_header_end(kii_http* kii_http) {
 void kii_state_req_body_read(kii_http* kii_http) {
   kii_http->_read_size = kii_http->_cb_read(kii_http->_read_buffer, 1, READ_BODY_SIZE, kii_http->_read_data);
   // TODO: handle read failure. let return signed value?
-  kii_http->_state = KII_STATE_REQ_BODY_SEND;
+  if (kii_http->_read_size > 0) {
+    kii_http->_state = KII_STATE_REQ_BODY_SEND;
+  } else {
+    kii_http->_state = KII_STATE_RESP_HEADERS_ALLOC;
+  }
   if (kii_http->_read_size < READ_BODY_SIZE) {
     kii_http->_read_req_end = 1;
   }

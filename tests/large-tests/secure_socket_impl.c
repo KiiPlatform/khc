@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include <openssl/crypto.h>
-#include <openssl/ssl.h>
 #include <openssl/err.h>
 
 /* Suppress warnings, because OpenSSL was deprecated in Mac. */
@@ -19,31 +18,19 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-typedef struct _ssl_context
-{
-    SSL *ssl;
-    SSL_CTX *ssl_ctx;
-    int socket;
-} ssl_context_t;
-
 kii_sock_code_t
-    s_connect_cb(void* socket_context, const char* host,
+    s_connect_cb(void* sock_ctx, const char* host,
             unsigned int port)
 {
     int sock, ret;
     struct hostent *servhost;
     struct sockaddr_in server;
-    ssl_context_t *ctx = NULL;
     SSL *ssl = NULL;
     SSL_CTX *ssl_ctx = NULL;
-
-    ctx = (ssl_context_t*)malloc(sizeof(ssl_context_t));
-    memset(ctx, 0x00, sizeof(ssl_context_t));
 
     servhost = gethostbyname(host);
     if (servhost == NULL) {
         printf("failed to get host.\n");
-        free(ctx);
         return KIISOCK_FAIL;
     }
     memset(&server, 0x00, sizeof(server));
@@ -57,35 +44,30 @@ kii_sock_code_t
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         printf("failed to init socket.\n");
-        free(ctx);
         return KIISOCK_FAIL;
     }
 
     if (connect(sock, (struct sockaddr*) &server, sizeof(server)) == -1 ){
         printf("failed to connect socket.\n");
-        free(ctx);
         return KIISOCK_FAIL;
     }
 
     SSL_library_init();
-    ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+    ssl_ctx = SSL_CTX_new(TLS_client_method());
     if (ssl_ctx == NULL){
         printf("failed to init ssl context.\n");
-        free(ctx);
         return KIISOCK_FAIL;
     }
 
     ssl = SSL_new(ssl_ctx);
     if (ssl == NULL){
         printf("failed to init ssl.\n");
-        free(ctx);
         return KIISOCK_FAIL;
     }
 
     ret = SSL_set_fd(ssl, sock);
     if (ret == 0){
         printf("failed to set fd.\n");
-        free(ctx);
         return KIISOCK_FAIL;
     }
 
@@ -95,10 +77,10 @@ kii_sock_code_t
         char sslErrStr[120];
         ERR_error_string_n(sslErr, sslErrStr, 120);
         printf("failed to connect: %s\n", sslErrStr);
-        free(ctx);
         return KIISOCK_FAIL;
     }
 
+    ssl_context_t* ctx = (ssl_context_t*)sock_ctx;
     ctx->socket = sock;
     ctx->ssl = ssl;
     ctx->ssl_ctx = ssl_ctx;
@@ -163,7 +145,6 @@ kii_sock_code_t
         printf("failed to close:\n");
         return KIISOCK_FAIL;
     }
-    free(ctx);
     return KIISOCK_OK;
 }
 
