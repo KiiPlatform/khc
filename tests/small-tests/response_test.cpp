@@ -3,6 +3,7 @@
 #include "http_test.h"
 #include "test_callbacks.h"
 #include <fstream>
+#include <string.h>
 
 TEST_CASE( "HTTP response test" ) {
   kii_http http;
