@@ -30,6 +30,10 @@
     "typeinfo": "cpp",
     "hashtable": "cpp",
     "unordered_map": "cpp",
-    "__string": "cpp"
+    "__string": "cpp",
+    "istream": "cpp",
+    "__hash_table": "cpp",
+    "hash_map": "cpp",
+    "list": "cpp"
   }
 }
