@@ -6,7 +6,6 @@
 
 std::istream& http_test::read_header(std::istream &in, std::string &out)
 {
-  std::cout << "read_header" << std::endl;
   char c;
   while (in.get(c).good())
   {
