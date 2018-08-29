@@ -48,7 +48,7 @@ http_test::Resp::Resp(std::istream& is) {
   std::streampos length = is.tellg();
   is.seekg(0, std::ios::beg);
 
-  while(is.tellg() < length) {
+  while(is.tellg() < length && is.good()) {
     std::string header = "";
     read_header(is, header);
     if (header == "") {
@@ -59,8 +59,9 @@ http_test::Resp::Resp(std::istream& is) {
   // Read body
   char* buffer = new char[1024];
   std::ostringstream os;
-  while (is.tellg() < length) {
-    size_t len = is.readsome(buffer, 1024);
+  while (is.tellg() < length && is.good()) {
+    is.read(buffer, 1024);
+    size_t len = is.gcount();
     os.write(buffer, len);
   }
   delete[] buffer;
