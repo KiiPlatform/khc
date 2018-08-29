@@ -11,7 +11,7 @@ TEST_CASE( "HTTP response test" ) {
   ifstream ifs;
   ifs.open("./data/resp-login.txt");
 
-  http_test::Resp resp(ifs);
+  khct::http::Resp resp(ifs);
 
   ifs.close();
 

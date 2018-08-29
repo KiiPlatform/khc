@@ -11,7 +11,7 @@
 TEST_CASE( "HTTP minimal" ) {
   khc http;
 
-  http_test::Resp resp;
+  khct::http::Resp resp;
   resp.headers = { "HTTP/1.0 200 OK" };
 
   khc_set_param(&http, KHC_PARAM_HOST, (char*)"api.kii.com");
