@@ -21,10 +21,10 @@ TEST_CASE( "HTTP response test" ) {
   khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
 
   khct::cb::SockCtx s_ctx;
-  khc_set_cb_sock_connect(&http, khct::cb::cb_connect, &s_ctx);
-  khc_set_cb_sock_send(&http, khct::cb::cb_send, &s_ctx);
-  khc_set_cb_sock_recv(&http, khct::cb::cb_recv, &s_ctx);
-  khc_set_cb_sock_close(&http, khct::cb::cb_close, &s_ctx);
+  khc_set_cb_sock_connect(&http, khct::cb::mock_connect, &s_ctx);
+  khc_set_cb_sock_send(&http, khct::cb::mock_send, &s_ctx);
+  khc_set_cb_sock_recv(&http, khct::cb::mock_recv, &s_ctx);
+  khc_set_cb_sock_close(&http, khct::cb::mock_close, &s_ctx);
 
   khct::cb::IOCtx io_ctx;
   khc_set_cb_read(&http, khct::cb::cb_read, &io_ctx);
