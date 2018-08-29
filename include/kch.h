@@ -7,20 +7,20 @@ extern "C"
 #endif
 
 #include <stdio.h>
-#include "kii_socket_callback.h"
+#include "kch_socket_callback.h"
 
 typedef size_t (*KII_CB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
 typedef size_t (*KII_CB_READ)(char *buffer, size_t size, size_t count, void *userdata);
 typedef size_t (*KII_CB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
 
-typedef struct kii_slist {
+typedef struct kch_slist {
   char* data;
-  struct kii_slist* next;
-} kii_slist;
+  struct kch_slist* next;
+} kch_slist;
 
-kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length);
+kch_slist* kch_slist_append(kch_slist* slist, const char* string, size_t length);
 
-void kii_slist_free_all(kii_slist* slist);
+void kch_slist_free_all(kch_slist* slist);
 
 #define READ_REQ_BUFFER_SIZE 1024
 #define READ_RESP_HEADER_SIZE 1024
@@ -76,7 +76,7 @@ typedef struct kch {
   void* _header_data;
 
   /** Request header list */
-  kii_slist* _req_headers;
+  kch_slist* _req_headers;
 
   char* _host;
   char* _path;
@@ -96,7 +96,7 @@ typedef struct kch {
   void* _sock_ctx_recv;
   void* _sock_ctx_close;
 
-  kii_slist* _current_req_header;
+  kch_slist* _current_req_header;
 
   /** Request body buffer stream */
   char _read_buffer[READ_REQ_BUFFER_SIZE];

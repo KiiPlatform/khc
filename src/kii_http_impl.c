@@ -86,7 +86,7 @@ kch_code kch_set_param(kch* kch, kch_param param_type, void* data) {
       kch->_method = (char*)data;
       break;
     case KII_PARAM_REQ_HEADERS:
-      kch->_req_headers = (kii_slist*)data;
+      kch->_req_headers = (kch_slist*)data;
       break;
     default:
       return KII_ERR_FAIL;
@@ -94,7 +94,7 @@ kch_code kch_set_param(kch* kch, kch_param param_type, void* data) {
   return KII_ERR_OK;
 }
 
-void kii_state_idle(kch* kch) {
+void kch_state_idle(kch* kch) {
   if (kch->_host == NULL) {
     // Fallback to localhost
     kch->_host = "localhost";
@@ -113,8 +113,8 @@ void kii_state_idle(kch* kch) {
   return;
 }
 
-void kii_state_connect(kch* kch) {
-  kii_sock_code_t con_res = kch->_cb_sock_connect(kch->_sock_ctx_connect, kch->_host, 443);
+void kch_state_connect(kch* kch) {
+  kch_sock_code_t con_res = kch->_cb_sock_connect(kch->_sock_ctx_connect, kch->_host, 443);
   if (con_res == KIISOCK_OK) {
     kch->_state = KII_STATE_REQ_LINE;
     return;
@@ -138,14 +138,14 @@ static size_t request_line_len(kch* kch) {
   // Path must be started with '/'
   char* path = kch->_path;
 
-  return ( // example)GET https://api.kii.com/v1/users HTTP1.0\r\n
+  return ( // example)GET https://api.kch.com/v1/users HTTP1.0\r\n
     strlen(method) + 1
     + strlen(schema) + strlen(host) + strlen(path) + 1
     + strlen(http_version)
   );
 }
 
-void kii_state_req_line(kch* kch) {
+void kch_state_req_line(kch* kch) {
   size_t len = request_line_len(kch);
   char request_line[len+1];
   char* host = kch->_host;
@@ -159,7 +159,7 @@ void kii_state_req_line(kch* kch) {
   strcat(request_line, path);
   strcat(request_line, " ");
   strcat(request_line, http_version);
-  kii_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, request_line, strlen(request_line));
+  kch_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, request_line, strlen(request_line));
   if (send_res == KIISOCK_OK) {
     kch->_state = KII_STATE_REQ_HEADER;
     kch->_current_req_header = kch->_req_headers;
@@ -175,7 +175,7 @@ void kii_state_req_line(kch* kch) {
   } 
 }
 
-void kii_state_req_header(kch* kch) {
+void kch_state_req_header(kch* kch) {
   if (kch->_current_req_header == NULL) {
     kch->_state = KII_STATE_REQ_HEADER_END;
     return;
@@ -195,9 +195,9 @@ void kii_state_req_header(kch* kch) {
   kch->_state = KII_STATE_REQ_HEADER_SEND;
 }
 
-void kii_state_req_header_send(kch* kch) {
+void kch_state_req_header_send(kch* kch) {
   char* line = kch->_current_req_header->data;
-  kii_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, line, strlen(line));
+  kch_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, line, strlen(line));
   if (send_res == KIISOCK_OK) {
     kch->_state = KII_STATE_REQ_HEADER_SEND_CRLF;
     return;
@@ -212,8 +212,8 @@ void kii_state_req_header_send(kch* kch) {
   } 
 }
 
-void kii_state_req_header_send_crlf(kch* kch) {
-  kii_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, "\r\n", 2);
+void kch_state_req_header_send_crlf(kch* kch) {
+  kch_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, "\r\n", 2);
   if (send_res == KIISOCK_OK) {
     kch->_current_req_header = kch->_current_req_header->next;
     kch->_state = KII_STATE_REQ_HEADER;
@@ -229,8 +229,8 @@ void kii_state_req_header_send_crlf(kch* kch) {
   } 
 }
 
-void kii_state_req_header_end(kch* kch) {
-  kii_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, "\r\n", 2);
+void kch_state_req_header_end(kch* kch) {
+  kch_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, "\r\n", 2);
   if (send_res == KIISOCK_OK) {
     kch->_state = KII_STATE_REQ_BODY_READ;
     kch->_read_req_end = 0;
@@ -246,7 +246,7 @@ void kii_state_req_header_end(kch* kch) {
   }
 }
 
-void kii_state_req_body_read(kch* kch) {
+void kch_state_req_body_read(kch* kch) {
   kch->_read_size = kch->_cb_read(kch->_read_buffer, 1, READ_BODY_SIZE, kch->_read_data);
   // TODO: handle read failure. let return signed value?
   if (kch->_read_size > 0) {
@@ -260,8 +260,8 @@ void kii_state_req_body_read(kch* kch) {
   return;
 }
 
-void kii_state_req_body_send(kch* kch) {
-  kii_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, kch->_read_buffer, kch->_read_size);
+void kch_state_req_body_send(kch* kch) {
+  kch_sock_code_t send_res = kch->_cb_sock_send(kch->_sock_ctx_send, kch->_read_buffer, kch->_read_size);
   if (send_res == KIISOCK_OK) {
     if (kch->_read_req_end == 1) {
       kch->_state = KII_STATE_RESP_HEADERS_ALLOC;
@@ -280,7 +280,7 @@ void kii_state_req_body_send(kch* kch) {
   }
 }
 
-void kii_state_resp_headers_alloc(kch* kch) {
+void kch_state_resp_headers_alloc(kch* kch) {
   kch->_resp_header_buffer = malloc(READ_RESP_HEADER_SIZE);
   if (kch->_resp_header_buffer == NULL) {
     kch->_state = KII_STATE_CLOSE;
@@ -294,7 +294,7 @@ void kii_state_resp_headers_alloc(kch* kch) {
   return;
 }
 
-void kii_state_resp_headers_realloc(kch* kch) {
+void kch_state_resp_headers_realloc(kch* kch) {
   void* newBuff = realloc(kch->_resp_header_buffer, kch->_resp_header_buffer_size + READ_RESP_HEADER_SIZE);
   if (newBuff == NULL) {
     free(kch->_resp_header_buffer);
@@ -313,10 +313,10 @@ void kii_state_resp_headers_realloc(kch* kch) {
   return;
 }
 
-void kii_state_resp_headers_read(kch* kch) {
+void kch_state_resp_headers_read(kch* kch) {
   size_t read_size = 0;
   size_t read_req_size = READ_RESP_HEADER_SIZE - 1;
-  kii_sock_code_t read_res = 
+  kch_sock_code_t read_res = 
     kch->_cb_sock_recv(kch->_sock_ctx_recv, kch->_resp_header_buffer_current_pos, read_req_size, &read_size);
   if (read_res == KIISOCK_OK) {
     kch->_resp_header_read_size += read_size;
@@ -351,7 +351,7 @@ void kii_state_resp_headers_read(kch* kch) {
   }
 }
 
-void kii_state_resp_headers_callback(kch* kch) {
+void kch_state_resp_headers_callback(kch* kch) {
   char* header_boundary = strstr(kch->_cb_header_pos, "\r\n");
   size_t header_size = header_boundary - kch->_cb_header_pos;
   size_t header_written = 
@@ -392,7 +392,7 @@ void kii_state_resp_headers_callback(kch* kch) {
   }
 }
 
-void kii_state_resp_body_flagment(kch* kch) {
+void kch_state_resp_body_flagment(kch* kch) {
   size_t written = 
     kch->_cb_write(kch->_body_flagment, 1, kch->_body_flagment_size, kch->_write_data);
   free(kch->_resp_header_buffer);
@@ -412,9 +412,9 @@ void kii_state_resp_body_flagment(kch* kch) {
   }
 }
 
-void kii_state_resp_body_read(kch* kch) {
+void kch_state_resp_body_read(kch* kch) {
   size_t read_size = 0;
-  kii_sock_code_t read_res = 
+  kch_sock_code_t read_res = 
     kch->_cb_sock_recv(kch->_sock_ctx_recv, kch->_body_buffer, READ_BODY_SIZE, &read_size);
   if (read_res == KIISOCK_OK) {
     if (read_size < READ_BODY_SIZE) {
@@ -434,7 +434,7 @@ void kii_state_resp_body_read(kch* kch) {
   }
 }
 
-void kii_state_resp_body_callback(kch* kch) {
+void kch_state_resp_body_callback(kch* kch) {
   size_t written = kch->_cb_write(kch->_body_buffer, 1, kch->_body_read_size, kch->_write_data);
   if (written < kch->_body_read_size) { // Error in write callback.
     kch->_state = KII_STATE_CLOSE;
@@ -449,8 +449,8 @@ void kii_state_resp_body_callback(kch* kch) {
   return;
 }
 
-void kii_state_close(kch* kch) {
-  kii_sock_code_t close_res = kch->_cb_sock_close(kch->_sock_ctx_close);
+void kch_state_close(kch* kch) {
+  kch_sock_code_t close_res = kch->_cb_sock_close(kch->_sock_ctx_close);
   if (close_res == KIISOCK_OK) {
     kch->_state = KII_STATE_FINISHED;
     kch->_result = KII_ERR_OK;
@@ -467,21 +467,21 @@ void kii_state_close(kch* kch) {
 }
 
 const KII_STATE_HANDLER state_handlers[] = {
-  kii_state_idle,
-  kii_state_connect,
-  kii_state_req_line,
-  kii_state_req_header,
-  kii_state_req_header_send,
-  kii_state_req_header_send_crlf,
-  kii_state_req_header_end,
-  kii_state_req_body_read,
-  kii_state_req_body_send,
-  kii_state_resp_headers_alloc,
-  kii_state_resp_headers_realloc,
-  kii_state_resp_headers_read,
-  kii_state_resp_headers_callback,
-  kii_state_resp_body_flagment,
-  kii_state_resp_body_read,
-  kii_state_resp_body_callback,
-  kii_state_close
+  kch_state_idle,
+  kch_state_connect,
+  kch_state_req_line,
+  kch_state_req_header,
+  kch_state_req_header_send,
+  kch_state_req_header_send_crlf,
+  kch_state_req_header_end,
+  kch_state_req_body_read,
+  kch_state_req_body_send,
+  kch_state_resp_headers_alloc,
+  kch_state_resp_headers_realloc,
+  kch_state_resp_headers_read,
+  kch_state_resp_headers_callback,
+  kch_state_resp_body_flagment,
+  kch_state_resp_body_read,
+  kch_state_resp_body_callback,
+  kch_state_close
 };

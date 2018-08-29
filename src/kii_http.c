@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include "kch.h"
 #include "kch_impl.h"
-#include "kii_socket_callback.h"
+#include "kch_socket_callback.h"
 
-kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length) {
-  kii_slist* next;
-  next = (kii_slist*)malloc(sizeof(kii_slist));
+kch_slist* kch_slist_append(kch_slist* slist, const char* string, size_t length) {
+  kch_slist* next;
+  next = (kch_slist*)malloc(sizeof(kch_slist));
   next->next = NULL;
   next->data = (char*)malloc(length+1);
   strncpy(next->data, string, length);
@@ -19,11 +19,11 @@ kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length)
   return slist;
 }
 
-void kii_slist_free_all(kii_slist* slist) {
-  kii_slist *curr;
+void kch_slist_free_all(kch_slist* slist) {
+  kch_slist *curr;
   curr = slist;
   while (curr != NULL) {
-    kii_slist *next = curr->next;
+    kch_slist *next = curr->next;
     free(curr->data);
     curr->data = NULL;
     free(curr);

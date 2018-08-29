@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-typedef enum kii_sock_code_t {
+typedef enum kch_sock_code_t {
     /** Retrun this code when operation succeed. */
     KIISOCK_OK,
 
@@ -20,7 +20,7 @@ typedef enum kii_sock_code_t {
      *  KIISOCK_OK or KIISOCK_FAIL.
      */
     KIISOCK_AGAIN
-} kii_sock_code_t;
+} kch_sock_code_t;
 
 /** Callback for connecting socket to server.
  * Applications must implement this callback in the target enviroment.
@@ -33,7 +33,7 @@ typedef enum kii_sock_code_t {
  * return KIISOCK_FAIL. If applications want to pend returning
  * success or fail, applications need to return KII_SOCKETC_AGAIN.
  */
-typedef kii_sock_code_t
+typedef kch_sock_code_t
     (*KII_CB_SOCK_CONNECT)
     (void* sock_ctx, const char* host, unsigned int port);
 
@@ -50,7 +50,7 @@ typedef kii_sock_code_t
  * data, applications need to return KII_SOCKETC_AGAIN. In this case,
  * KiiThingSDK Embedded Core pass same data to this callback again.
  */
-typedef kii_sock_code_t
+typedef kch_sock_code_t
     (*KII_CB_SOCK_SEND)
     (void* sock_ctx, const char* buffer, size_t length);
 
@@ -69,7 +69,7 @@ typedef kii_sock_code_t
  * KII_HTTPC_AGAIN. In this case, applications must not set receving
  * data to buffer if some data is received.
  */
-typedef kii_sock_code_t
+typedef kch_sock_code_t
     (*KII_CB_SOCK_RECV)
     (void* sock_ctx, char* buffer, size_t length_to_read,
      size_t* out_actual_length);
@@ -85,7 +85,7 @@ typedef kii_sock_code_t
  * to pend returning success or fail, applications need to return
  * KII_SOCKETC_AGAIN.
  */
-typedef kii_sock_code_t
+typedef kch_sock_code_t
     (*KII_CB_SOCK_CLOSE)(void* sock_context);
 
 
