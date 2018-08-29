@@ -17,22 +17,22 @@ struct IOCtx {
   std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_write;
 };
 
-inline khc_sock_code_t cb_connect(void* socket_context, const char* host, unsigned int port) {
+inline khc_sock_code_t mock_connect(void* socket_context, const char* host, unsigned int port) {
   SockCtx* ctx = (SockCtx*)socket_context;
   return ctx->on_connect(socket_context, host, port);
 }
 
-inline khc_sock_code_t cb_send (void* socket_context, const char* buffer, size_t length) {
+inline khc_sock_code_t mock_send (void* socket_context, const char* buffer, size_t length) {
   SockCtx* ctx = (SockCtx*)socket_context;
   return ctx->on_send(socket_context, buffer, length);
 }
 
-inline khc_sock_code_t cb_recv(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+inline khc_sock_code_t mock_recv(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
   SockCtx* ctx = (SockCtx*)socket_context;
   return ctx->on_recv(socket_context, buffer, length_to_read, out_actual_length);
 }
 
-inline khc_sock_code_t cb_close(void* socket_context) {
+inline khc_sock_code_t mock_close(void* socket_context) {
   SockCtx* ctx = (SockCtx*)socket_context;
   return ctx->on_close(socket_context);
 }
