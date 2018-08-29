@@ -58,7 +58,7 @@ TEST_CASE( "HTTP response test" ) {
   s_ctx.on_recv = [=, &on_recv_called, &resp](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     ++on_recv_called = true;
     REQUIRE( length_to_read == 1023 );
-    *out_actual_length = resp.to_istringstream().readsome(buffer, length_to_read);
+    *out_actual_length = resp.to_istringstream().read(buffer, length_to_read).gcount();
     return KIISOCK_OK;
   };
 

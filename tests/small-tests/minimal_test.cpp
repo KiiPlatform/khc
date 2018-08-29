@@ -118,7 +118,7 @@ TEST_CASE( "HTTP minimal" ) {
   s_ctx.on_recv = [=, &called, &resp](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
     REQUIRE( length_to_read == 1023 );
-    *out_actual_length = resp.to_istringstream().readsome(buffer, length_to_read);
+    *out_actual_length = resp.to_istringstream().read(buffer, length_to_read).gcount();
     return KIISOCK_OK;
   };
 
@@ -127,7 +127,7 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KII_ERR_OK );
   char buffer[1024];
-  size_t len = resp.to_istringstream().readsome((char*)&buffer, 1023);
+  size_t len = resp.to_istringstream().read((char*)&buffer, 1023).gcount();
   REQUIRE( http._resp_header_read_size == len );
   REQUIRE( called );
 
