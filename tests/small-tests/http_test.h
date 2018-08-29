@@ -8,14 +8,15 @@ using namespace std;
 #include <istream>
 #include <sstream>
 
-namespace http_test {
+namespace khct {
+namespace http {
 
 std::istream &read_header(std::istream &in, std::string &out);
 class Resp;
 
 }
 
-struct http_test::Resp {
+struct khct::http::Resp {
   std::vector<std::string> headers;
   std::string body;
   std::string to_string();
@@ -23,5 +24,7 @@ struct http_test::Resp {
   Resp();
   Resp(std::istream& is);
 };
+}
+
 
 #endif

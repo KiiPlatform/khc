@@ -1,9 +1,9 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include <kii_http.h>
+#include <khc.h>
 #include "secure_socket_impl.h"
-#include "kii_http_impl.h"
+#include "khc_impl.h"
 
 typedef struct io_ctx {
   std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_read;
@@ -27,23 +27,23 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 }
 
 TEST_CASE( "HTTP Get" ) {
-  kii_http http;
+  khc http;
 
-  kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api-jp.kii.com");
-  kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
-  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"");
-  kii_http_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
+  khc_set_param(&http, KHC_PARAM_HOST, (char*)"api-jp.kii.com");
+  khc_set_param(&http, KHC_PARAM_METHOD, (char*)"GET");
+  khc_set_param(&http, KHC_PARAM_PATH, (char*)"");
+  khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
 
   ssl_context_t s_ctx;
-  kii_http_set_cb_sock_connect(&http, s_connect_cb, &s_ctx);
-  kii_http_set_cb_sock_send(&http, s_send_cb, &s_ctx);
-  kii_http_set_cb_sock_recv(&http, s_recv_cb, &s_ctx);
-  kii_http_set_cb_sock_close(&http, s_close_cb, &s_ctx);
+  khc_set_cb_sock_connect(&http, s_connect_cb, &s_ctx);
+  khc_set_cb_sock_send(&http, s_send_cb, &s_ctx);
+  khc_set_cb_sock_recv(&http, s_recv_cb, &s_ctx);
+  khc_set_cb_sock_close(&http, s_close_cb, &s_ctx);
 
   io_ctx io_ctx;
-  kii_http_set_cb_read(&http, cb_read, &io_ctx);
-  kii_http_set_cb_write(&http, cb_write, &io_ctx);
-  kii_http_set_cb_header(&http, cb_header, &io_ctx);
+  khc_set_cb_read(&http, cb_read, &io_ctx);
+  khc_set_cb_write(&http, cb_write, &io_ctx);
+  khc_set_cb_header(&http, cb_header, &io_ctx);
 
   int on_read_called = 0;
   io_ctx.on_read = [=, &on_read_called](char *buffer, size_t size, size_t count, void *userdata) {
@@ -72,8 +72,8 @@ TEST_CASE( "HTTP Get" ) {
     return size * count;
   };
 
-  kii_http_code res = kii_http_perform(&http);
-  REQUIRE( res == KII_ERR_OK );
+  khc_code res = khc_perform(&http);
+  REQUIRE( res == KHC_ERR_OK );
   REQUIRE( on_read_called == 1 );
   REQUIRE( on_header_called > 1 );
   REQUIRE( on_write_called == 1 );

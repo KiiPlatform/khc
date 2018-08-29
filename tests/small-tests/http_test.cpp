@@ -4,7 +4,7 @@
 #include <iostream>
 #include "http_test.h"
 
-std::istream& http_test::read_header(std::istream &in, std::string &out)
+std::istream& khct::http::read_header(std::istream &in, std::string &out)
 {
   char c;
   while (in.get(c).good())
@@ -26,7 +26,7 @@ std::istream& http_test::read_header(std::istream &in, std::string &out)
   return in;
 }
 
-std::string http_test::Resp::to_string() {
+std::string khct::http::Resp::to_string() {
   ostringstream o;
   for (string h : headers) {
     o << h;
@@ -37,13 +37,13 @@ std::string http_test::Resp::to_string() {
   return o.str();
 }
 
-std::istringstream http_test::Resp::to_istringstream() {
+std::istringstream khct::http::Resp::to_istringstream() {
   return std::istringstream(this->to_string());
 }
 
-http_test::Resp::Resp() {}
+khct::http::Resp::Resp() {}
 
-http_test::Resp::Resp(std::istream& is) {
+khct::http::Resp::Resp(std::istream& is) {
   is.seekg(0, std::ios::end);
   std::streampos length = is.tellg();
   is.seekg(0, std::ios::beg);

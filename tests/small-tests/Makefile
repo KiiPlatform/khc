@@ -7,7 +7,7 @@ TARGET=./testapp
 INCLUDES=-I. -I.. -I../../src -I$(LIB_BUILD_DIR)/include
 LIBS_DIR=-L$(LIB_BUILD_DIR)/lib
 
-LIBS=-lkiihttp
+LIBS=-lkhc
 SRCS=$(wildcard *.cpp)
 TEST_RESULT_DIR=test-results/junit
 TEST_RESULT=$(TEST_RESULT_DIR)/test-result.xml
