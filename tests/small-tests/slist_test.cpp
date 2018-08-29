@@ -1,6 +1,6 @@
 #include <string.h>
 #include "catch.hpp"
-#include "kii_http.h"
+#include "kch.h"
 
 TEST_CASE( "slist append (1)" ) {
   kii_slist* list = NULL;

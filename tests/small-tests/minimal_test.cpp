@@ -2,33 +2,33 @@
 
 #include <string.h>
 #include "catch.hpp"
-#include <kii_http.h>
-#include "kii_http_impl.h"
+#include <kch.h>
+#include "kch_impl.h"
 #include "http_test.h"
 #include "test_callbacks.h"
 #include <sstream>
 
 TEST_CASE( "HTTP minimal" ) {
-  kii_http http;
+  kch http;
 
   http_test::Resp resp;
   resp.headers = { "HTTP/1.0 200 OK" };
 
-  kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
-  kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
-  kii_http_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
-  kii_http_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
+  kch_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
+  kch_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
+  kch_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
+  kch_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
   sock_ctx s_ctx;
-  kii_http_set_cb_sock_connect(&http, cb_connect, &s_ctx);
-  kii_http_set_cb_sock_send(&http, cb_send, &s_ctx);
-  kii_http_set_cb_sock_recv(&http, cb_recv, &s_ctx);
-  kii_http_set_cb_sock_close(&http, cb_close, &s_ctx);
+  kch_set_cb_sock_connect(&http, cb_connect, &s_ctx);
+  kch_set_cb_sock_send(&http, cb_send, &s_ctx);
+  kch_set_cb_sock_recv(&http, cb_recv, &s_ctx);
+  kch_set_cb_sock_close(&http, cb_close, &s_ctx);
 
   io_ctx io_ctx;
-  kii_http_set_cb_read(&http, cb_read, &io_ctx);
-  kii_http_set_cb_write(&http, cb_write, &io_ctx);
-  kii_http_set_cb_header(&http, cb_header, &io_ctx);
+  kch_set_cb_read(&http, cb_read, &io_ctx);
+  kch_set_cb_write(&http, cb_write, &io_ctx);
+  kch_set_cb_header(&http, cb_header, &io_ctx);
 
   kii_state_idle(&http);
   REQUIRE( http._state == KII_STATE_CONNECT );

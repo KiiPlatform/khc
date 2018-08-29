@@ -1,5 +1,5 @@
-#ifndef __kii_http
-#define __kii_http
+#ifndef __kch
+#define __kch
 
 #ifdef __cplusplus
 extern "C"
@@ -26,14 +26,14 @@ void kii_slist_free_all(kii_slist* slist);
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
 
-typedef enum kii_http_param {
+typedef enum kch_param {
   KII_PARAM_HOST,
   KII_PARAM_PATH,
   KII_PARAM_METHOD,
   KII_PARAM_REQ_HEADERS
-} kii_http_param;
+} kch_param;
 
-typedef enum kii_http_state {
+typedef enum kch_state {
   KII_STATE_IDLE,
   KII_STATE_CONNECT,
   KII_STATE_REQ_LINE,
@@ -53,9 +53,9 @@ typedef enum kii_http_state {
   KII_STATE_RESP_BODY_CALLBACK,
   KII_STATE_CLOSE,
   KII_STATE_FINISHED,
-} kii_http_state;
+} kch_state;
 
-typedef enum kii_http_code {
+typedef enum kch_code {
   KII_ERR_OK,
   KII_ERR_SOCK_CONNECT,
   KII_ERR_SOCK_CLOSE,
@@ -65,9 +65,9 @@ typedef enum kii_http_code {
   KII_ERR_WRITE_CALLBACK,
   KII_ERR_ALLOCATION,
   KII_ERR_FAIL,
-} kii_http_code;
+} kch_code;
 
-typedef struct kii_http {
+typedef struct kch {
   KII_CB_WRITE _cb_write;
   void* _write_data;
   KII_CB_READ _cb_read;
@@ -83,7 +83,7 @@ typedef struct kii_http {
   char* _method;
 
   /** State machine */
-  kii_http_state _state;
+  kch_state _state;
 
   /** Socket functions. */
   KII_CB_SOCK_CONNECT _cb_sock_connect;
@@ -124,45 +124,45 @@ typedef struct kii_http {
   char _body_buffer[READ_BODY_SIZE];
   size_t _body_read_size;
 
-  kii_http_code _result;
-} kii_http;
+  kch_code _result;
+} kch;
 
-kii_http_code kii_http_perform(kii_http* kii_http);
+kch_code kch_perform(kch* kch);
 
-kii_http_code kii_http_set_param(kii_http* kii_http, kii_http_param param_type, void* data);
+kch_code kch_set_param(kch* kch, kch_param param_type, void* data);
 
-kii_http_code kii_http_set_cb_sock_connect(
-  kii_http* kii_http,
+kch_code kch_set_cb_sock_connect(
+  kch* kch,
   KII_CB_SOCK_CONNECT cb,
   void* userdata);
 
-kii_http_code kii_http_set_cb_sock_send(
-  kii_http* kii_http,
+kch_code kch_set_cb_sock_send(
+  kch* kch,
   KII_CB_SOCK_SEND cb,
   void* userdata);
 
-kii_http_code kii_http_set_cb_sock_recv(
-  kii_http* kii_http,
+kch_code kch_set_cb_sock_recv(
+  kch* kch,
   KII_CB_SOCK_RECV cb,
   void* userdata);
 
-kii_http_code kii_http_set_cb_sock_close(
-  kii_http* kii_http,
+kch_code kch_set_cb_sock_close(
+  kch* kch,
   KII_CB_SOCK_CLOSE cb,
   void* userdata);
 
-kii_http_code kii_http_set_cb_read(
-  kii_http* kii_http,
+kch_code kch_set_cb_read(
+  kch* kch,
   KII_CB_READ cb,
   void* userdata);
 
-kii_http_code kii_http_set_cb_write(
-  kii_http* kii_http,
+kch_code kch_set_cb_write(
+  kch* kch,
   KII_CB_WRITE cb,
   void* userdata);
 
-kii_http_code kii_http_set_cb_header(
-  kii_http* kii_http,
+kch_code kch_set_cb_header(
+  kch* kch,
   KII_CB_HEADER cb,
   void* userdata);
 
@@ -170,4 +170,4 @@ kii_http_code kii_http_set_cb_header(
 }
 #endif
 
-#endif //__kii_http
+#endif //__kch

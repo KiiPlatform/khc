@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "kii_http.h"
-#include "kii_http_impl.h"
+#include "kch.h"
+#include "kch_impl.h"
 #include "kii_socket_callback.h"
 
 kii_slist* kii_slist_append(kii_slist* slist, const char* string, size_t length) {
@@ -31,14 +31,14 @@ void kii_slist_free_all(kii_slist* slist) {
   }
 }
 
-kii_http_code kii_http_perform(kii_http* kii_http) {
-  kii_http->_state = KII_STATE_IDLE;
-  while(kii_http->_state != KII_STATE_FINISHED) {
-    state_handlers[kii_http->_state](kii_http);
+kch_code kch_perform(kch* kch) {
+  kch->_state = KII_STATE_IDLE;
+  while(kch->_state != KII_STATE_FINISHED) {
+    state_handlers[kch->_state](kch);
   }
-  kii_http_code res = kii_http->_result;
-  kii_http->_state = KII_STATE_IDLE;
-  kii_http->_result = KII_ERR_OK;
+  kch_code res = kch->_result;
+  kch->_state = KII_STATE_IDLE;
+  kch->_result = KII_ERR_OK;
   
   return res;
 }
