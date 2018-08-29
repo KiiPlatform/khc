@@ -9,9 +9,9 @@ extern "C"
 #include <stdio.h>
 #include "khc_socket_callback.h"
 
-typedef size_t (*KII_CB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
-typedef size_t (*KII_CB_READ)(char *buffer, size_t size, size_t count, void *userdata);
-typedef size_t (*KII_CB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*KHC_CB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
+typedef size_t (*KHC_CB_READ)(char *buffer, size_t size, size_t count, void *userdata);
+typedef size_t (*KHC_CB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
 
 typedef struct khc_slist {
   char* data;
@@ -27,52 +27,52 @@ void khc_slist_free_all(khc_slist* slist);
 #define READ_BODY_SIZE 1024
 
 typedef enum khc_param {
-  KII_PARAM_HOST,
-  KII_PARAM_PATH,
-  KII_PARAM_METHOD,
-  KII_PARAM_REQ_HEADERS
+  KHC_PARAM_HOST,
+  KHC_PARAM_PATH,
+  KHC_PARAM_METHOD,
+  KHC_PARAM_REQ_HEADERS
 } khc_param;
 
 typedef enum khc_state {
-  KII_STATE_IDLE,
-  KII_STATE_CONNECT,
-  KII_STATE_REQ_LINE,
-  KII_STATE_REQ_HEADER,
-  KII_STATE_REQ_HEADER_SEND,
-  KII_STATE_REQ_HEADER_SEND_CRLF,
-  KII_STATE_REQ_HEADER_END,
-  KII_STATE_REQ_BODY_READ,
-  KII_STATE_REQ_BODY_SEND,
-  KII_STATE_RESP_HEADERS_ALLOC,
-  KII_STATE_RESP_HEADERS_REALLOC,
-  KII_STATE_RESP_HEADERS_READ,
-  KII_STATE_RESP_HEADERS_CALLBACK,
+  KHC_STATE_IDLE,
+  KHC_STATE_CONNECT,
+  KHC_STATE_REQ_LINE,
+  KHC_STATE_REQ_HEADER,
+  KHC_STATE_REQ_HEADER_SEND,
+  KHC_STATE_REQ_HEADER_SEND_CRLF,
+  KHC_STATE_REQ_HEADER_END,
+  KHC_STATE_REQ_BODY_READ,
+  KHC_STATE_REQ_BODY_SEND,
+  KHC_STATE_RESP_HEADERS_ALLOC,
+  KHC_STATE_RESP_HEADERS_REALLOC,
+  KHC_STATE_RESP_HEADERS_READ,
+  KHC_STATE_RESP_HEADERS_CALLBACK,
   /** Process flagment of body obtaind when trying to find body boundary. */
-  KII_STATE_RESP_BODY_FLAGMENT,
-  KII_STATE_RESP_BODY_READ,
-  KII_STATE_RESP_BODY_CALLBACK,
-  KII_STATE_CLOSE,
-  KII_STATE_FINISHED,
+  KHC_STATE_RESP_BODY_FLAGMENT,
+  KHC_STATE_RESP_BODY_READ,
+  KHC_STATE_RESP_BODY_CALLBACK,
+  KHC_STATE_CLOSE,
+  KHC_STATE_FINISHED,
 } khc_state;
 
 typedef enum khc_code {
-  KII_ERR_OK,
-  KII_ERR_SOCK_CONNECT,
-  KII_ERR_SOCK_CLOSE,
-  KII_ERR_SOCK_SEND,
-  KII_ERR_SOCK_RECV,
-  KII_ERR_HEADER_CALLBACK,
-  KII_ERR_WRITE_CALLBACK,
-  KII_ERR_ALLOCATION,
-  KII_ERR_FAIL,
+  KHC_ERR_OK,
+  KHC_ERR_SOCK_CONNECT,
+  KHC_ERR_SOCK_CLOSE,
+  KHC_ERR_SOCK_SEND,
+  KHC_ERR_SOCK_RECV,
+  KHC_ERR_HEADER_CALLBACK,
+  KHC_ERR_WRITE_CALLBACK,
+  KHC_ERR_ALLOCATION,
+  KHC_ERR_FAIL,
 } khc_code;
 
 typedef struct khc {
-  KII_CB_WRITE _cb_write;
+  KHC_CB_WRITE _cb_write;
   void* _write_data;
-  KII_CB_READ _cb_read;
+  KHC_CB_READ _cb_read;
   void* _read_data;
-  KII_CB_HEADER _cb_header;
+  KHC_CB_HEADER _cb_header;
   void* _header_data;
 
   /** Request header list */
@@ -86,10 +86,10 @@ typedef struct khc {
   khc_state _state;
 
   /** Socket functions. */
-  KII_CB_SOCK_CONNECT _cb_sock_connect;
-  KII_CB_SOCK_SEND _cb_sock_send;
-  KII_CB_SOCK_RECV _cb_sock_recv;
-  KII_CB_SOCK_CLOSE _cb_sock_close;
+  KHC_CB_SOCK_CONNECT _cb_sock_connect;
+  KHC_CB_SOCK_SEND _cb_sock_send;
+  KHC_CB_SOCK_RECV _cb_sock_recv;
+  KHC_CB_SOCK_CLOSE _cb_sock_close;
   /**   Socket context. */
   void* _sock_ctx_connect;
   void* _sock_ctx_send;
@@ -133,37 +133,37 @@ khc_code khc_set_param(khc* khc, khc_param param_type, void* data);
 
 khc_code khc_set_cb_sock_connect(
   khc* khc,
-  KII_CB_SOCK_CONNECT cb,
+  KHC_CB_SOCK_CONNECT cb,
   void* userdata);
 
 khc_code khc_set_cb_sock_send(
   khc* khc,
-  KII_CB_SOCK_SEND cb,
+  KHC_CB_SOCK_SEND cb,
   void* userdata);
 
 khc_code khc_set_cb_sock_recv(
   khc* khc,
-  KII_CB_SOCK_RECV cb,
+  KHC_CB_SOCK_RECV cb,
   void* userdata);
 
 khc_code khc_set_cb_sock_close(
   khc* khc,
-  KII_CB_SOCK_CLOSE cb,
+  KHC_CB_SOCK_CLOSE cb,
   void* userdata);
 
 khc_code khc_set_cb_read(
   khc* khc,
-  KII_CB_READ cb,
+  KHC_CB_READ cb,
   void* userdata);
 
 khc_code khc_set_cb_write(
   khc* khc,
-  KII_CB_WRITE cb,
+  KHC_CB_WRITE cb,
   void* userdata);
 
 khc_code khc_set_cb_header(
   khc* khc,
-  KII_CB_HEADER cb,
+  KHC_CB_HEADER cb,
   void* userdata);
 
 #ifdef __cplusplus

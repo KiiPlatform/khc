@@ -1,5 +1,5 @@
-#ifndef __KII_CORE_SOCKET
-#define __KII_CORE_SOCKET
+#ifndef __KHC_CORE_SOCKET
+#define __KHC_CORE_SOCKET
 
 #include "khc_socket_callback.h"
 #include <openssl/ssl.h>
@@ -38,4 +38,4 @@ khc_sock_code_t
 }
 #endif
 
-#endif /* __KII_CORE_SOCKET */
+#endif /* __KHC_CORE_SOCKET */

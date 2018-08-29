@@ -31,7 +31,7 @@ khc_sock_code_t
     servhost = gethostbyname(host);
     if (servhost == NULL) {
         printf("failed to get host.\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
     memset(&server, 0x00, sizeof(server));
     server.sin_family = AF_INET;
@@ -44,12 +44,12 @@ khc_sock_code_t
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         printf("failed to init socket.\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 
     if (connect(sock, (struct sockaddr*) &server, sizeof(server)) == -1 ){
         printf("failed to connect socket.\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 
     SSL_library_init();
@@ -62,19 +62,19 @@ khc_sock_code_t
     ssl_ctx = SSL_CTX_new(method);
     if (ssl_ctx == NULL){
         printf("failed to init ssl context.\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 
     ssl = SSL_new(ssl_ctx);
     if (ssl == NULL){
         printf("failed to init ssl.\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 
     ret = SSL_set_fd(ssl, sock);
     if (ret == 0){
         printf("failed to set fd.\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 
     ret = SSL_connect(ssl);
@@ -83,14 +83,14 @@ khc_sock_code_t
         char sslErrStr[120];
         ERR_error_string_n(sslErr, sslErrStr, 120);
         printf("failed to connect: %s\n", sslErrStr);
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 
     ssl_context_t* ctx = (ssl_context_t*)sock_ctx;
     ctx->socket = sock;
     ctx->ssl = ssl;
     ctx->ssl_ctx = ssl_ctx;
-    return KIISOCK_OK;
+    return KHCSOCK_OK;
 }
 
 khc_sock_code_t
@@ -101,10 +101,10 @@ khc_sock_code_t
     ssl_context_t* ctx = (ssl_context_t*)socket_context;
     int ret = SSL_write(ctx->ssl, buffer, length);
     if (ret > 0) {
-        return KIISOCK_OK;
+        return KHCSOCK_OK;
     } else {
         printf("failed to send\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 }
 
@@ -118,12 +118,12 @@ khc_sock_code_t
     int ret = SSL_read(ctx->ssl, buffer, length_to_read);
     if (ret > 0) {
         *out_actual_length = ret;
-        return KIISOCK_OK;
+        return KHCSOCK_OK;
     } else {
         printf("failed to receive:\n");
         /* TOOD: could be 0 on success? */
         *out_actual_length = 0;
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
 }
 
@@ -149,9 +149,9 @@ khc_sock_code_t
     SSL_CTX_free(ctx->ssl_ctx);
     if (ret != 1) {
         printf("failed to close:\n");
-        return KIISOCK_FAIL;
+        return KHCSOCK_FAIL;
     }
-    return KIISOCK_OK;
+    return KHCSOCK_OK;
 }
 
 #ifdef __APPLE__

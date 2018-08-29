@@ -29,10 +29,10 @@ size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
 TEST_CASE( "HTTP Get" ) {
   khc http;
 
-  khc_set_param(&http, KII_PARAM_HOST, (char*)"api-jp.kii.com");
-  khc_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
-  khc_set_param(&http, KII_PARAM_PATH, (char*)"");
-  khc_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
+  khc_set_param(&http, KHC_PARAM_HOST, (char*)"api-jp.kii.com");
+  khc_set_param(&http, KHC_PARAM_METHOD, (char*)"GET");
+  khc_set_param(&http, KHC_PARAM_PATH, (char*)"");
+  khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
 
   ssl_context_t s_ctx;
   khc_set_cb_sock_connect(&http, s_connect_cb, &s_ctx);
@@ -73,7 +73,7 @@ TEST_CASE( "HTTP Get" ) {
   };
 
   khc_code res = khc_perform(&http);
-  REQUIRE( res == KII_ERR_OK );
+  REQUIRE( res == KHC_ERR_OK );
   REQUIRE( on_read_called == 1 );
   REQUIRE( on_header_called > 1 );
   REQUIRE( on_write_called == 1 );

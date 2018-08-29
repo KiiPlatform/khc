@@ -32,13 +32,13 @@ void khc_slist_free_all(khc_slist* slist) {
 }
 
 khc_code khc_perform(khc* khc) {
-  khc->_state = KII_STATE_IDLE;
-  while(khc->_state != KII_STATE_FINISHED) {
+  khc->_state = KHC_STATE_IDLE;
+  while(khc->_state != KHC_STATE_FINISHED) {
     state_handlers[khc->_state](khc);
   }
   khc_code res = khc->_result;
-  khc->_state = KII_STATE_IDLE;
-  khc->_result = KII_ERR_OK;
+  khc->_state = KHC_STATE_IDLE;
+  khc->_result = KHC_ERR_OK;
   
   return res;
 }

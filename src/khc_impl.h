@@ -26,9 +26,9 @@ void khc_state_resp_body_read(khc* khc);
 void khc_state_resp_body_callback(khc* khc);
 void khc_state_close(khc* khc);
 
-typedef void (*KII_STATE_HANDLER)(khc* khc);
+typedef void (*KHC_STATE_HANDLER)(khc* khc);
 
-extern const KII_STATE_HANDLER state_handlers[];
+extern const KHC_STATE_HANDLER state_handlers[];
 
 #ifdef __cplusplus
 }
