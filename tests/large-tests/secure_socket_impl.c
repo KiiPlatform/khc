@@ -18,7 +18,7 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-kch_sock_code_t
+khc_sock_code_t
     s_connect_cb(void* sock_ctx, const char* host,
             unsigned int port)
 {
@@ -93,7 +93,7 @@ kch_sock_code_t
     return KIISOCK_OK;
 }
 
-kch_sock_code_t
+khc_sock_code_t
     s_send_cb(void* socket_context,
             const char* buffer,
             size_t length)
@@ -108,7 +108,7 @@ kch_sock_code_t
     }
 }
 
-kch_sock_code_t
+khc_sock_code_t
     s_recv_cb(void* socket_context,
             char* buffer,
             size_t length_to_read,
@@ -127,7 +127,7 @@ kch_sock_code_t
     }
 }
 
-kch_sock_code_t
+khc_sock_code_t
     s_close_cb(void* socket_context)
 {
     ssl_context_t* ctx = (ssl_context_t*)socket_context;

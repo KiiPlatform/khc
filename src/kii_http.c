@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "kch.h"
-#include "kch_impl.h"
-#include "kch_socket_callback.h"
+#include "khc.h"
+#include "khc_impl.h"
+#include "khc_socket_callback.h"
 
-kch_slist* kch_slist_append(kch_slist* slist, const char* string, size_t length) {
-  kch_slist* next;
-  next = (kch_slist*)malloc(sizeof(kch_slist));
+khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length) {
+  khc_slist* next;
+  next = (khc_slist*)malloc(sizeof(khc_slist));
   next->next = NULL;
   next->data = (char*)malloc(length+1);
   strncpy(next->data, string, length);
@@ -19,11 +19,11 @@ kch_slist* kch_slist_append(kch_slist* slist, const char* string, size_t length)
   return slist;
 }
 
-void kch_slist_free_all(kch_slist* slist) {
-  kch_slist *curr;
+void khc_slist_free_all(khc_slist* slist) {
+  khc_slist *curr;
   curr = slist;
   while (curr != NULL) {
-    kch_slist *next = curr->next;
+    khc_slist *next = curr->next;
     free(curr->data);
     curr->data = NULL;
     free(curr);
@@ -31,14 +31,14 @@ void kch_slist_free_all(kch_slist* slist) {
   }
 }
 
-kch_code kch_perform(kch* kch) {
-  kch->_state = KII_STATE_IDLE;
-  while(kch->_state != KII_STATE_FINISHED) {
-    state_handlers[kch->_state](kch);
+khc_code khc_perform(khc* khc) {
+  khc->_state = KII_STATE_IDLE;
+  while(khc->_state != KII_STATE_FINISHED) {
+    state_handlers[khc->_state](khc);
   }
-  kch_code res = kch->_result;
-  kch->_state = KII_STATE_IDLE;
-  kch->_result = KII_ERR_OK;
+  khc_code res = khc->_result;
+  khc->_state = KII_STATE_IDLE;
+  khc->_result = KII_ERR_OK;
   
   return res;
 }

@@ -1,12 +1,12 @@
 #include "catch.hpp"
-#include <kch.h>
+#include <khc.h>
 #include "http_test.h"
 #include "test_callbacks.h"
 #include <fstream>
 #include <string.h>
 
 TEST_CASE( "HTTP response test" ) {
-  kch http;
+  khc http;
 
   ifstream ifs;
   ifs.open("./data/resp-login.txt");
@@ -15,21 +15,21 @@ TEST_CASE( "HTTP response test" ) {
 
   ifs.close();
 
-  kch_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
-  kch_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
-  kch_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
-  kch_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
+  khc_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
+  khc_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
+  khc_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
+  khc_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
   sock_ctx s_ctx;
-  kch_set_cb_sock_connect(&http, cb_connect, &s_ctx);
-  kch_set_cb_sock_send(&http, cb_send, &s_ctx);
-  kch_set_cb_sock_recv(&http, cb_recv, &s_ctx);
-  kch_set_cb_sock_close(&http, cb_close, &s_ctx);
+  khc_set_cb_sock_connect(&http, cb_connect, &s_ctx);
+  khc_set_cb_sock_send(&http, cb_send, &s_ctx);
+  khc_set_cb_sock_recv(&http, cb_recv, &s_ctx);
+  khc_set_cb_sock_close(&http, cb_close, &s_ctx);
 
   io_ctx io_ctx;
-  kch_set_cb_read(&http, cb_read, &io_ctx);
-  kch_set_cb_write(&http, cb_write, &io_ctx);
-  kch_set_cb_header(&http, cb_header, &io_ctx);
+  khc_set_cb_read(&http, cb_read, &io_ctx);
+  khc_set_cb_write(&http, cb_write, &io_ctx);
+  khc_set_cb_header(&http, cb_header, &io_ctx);
 
   int on_connect_called = 0;
   s_ctx.on_connect = [=, &on_connect_called](void* socket_context, const char* host, unsigned int port) {
@@ -90,7 +90,7 @@ TEST_CASE( "HTTP response test" ) {
     return KIISOCK_OK;
   };
 
-  kch_code res = kch_perform(&http);
+  khc_code res = khc_perform(&http);
   REQUIRE( res == KII_ERR_OK );
   REQUIRE( on_connect_called == 1 );
   REQUIRE( on_send_called == 2 );

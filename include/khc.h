@@ -1,5 +1,5 @@
-#ifndef __kch
-#define __kch
+#ifndef __khc
+#define __khc
 
 #ifdef __cplusplus
 extern "C"
@@ -7,33 +7,33 @@ extern "C"
 #endif
 
 #include <stdio.h>
-#include "kch_socket_callback.h"
+#include "khc_socket_callback.h"
 
 typedef size_t (*KII_CB_WRITE)(char *ptr, size_t size, size_t count, void *userdata);
 typedef size_t (*KII_CB_READ)(char *buffer, size_t size, size_t count, void *userdata);
 typedef size_t (*KII_CB_HEADER)(char *buffer, size_t size, size_t count, void *userdata);
 
-typedef struct kch_slist {
+typedef struct khc_slist {
   char* data;
-  struct kch_slist* next;
-} kch_slist;
+  struct khc_slist* next;
+} khc_slist;
 
-kch_slist* kch_slist_append(kch_slist* slist, const char* string, size_t length);
+khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length);
 
-void kch_slist_free_all(kch_slist* slist);
+void khc_slist_free_all(khc_slist* slist);
 
 #define READ_REQ_BUFFER_SIZE 1024
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
 
-typedef enum kch_param {
+typedef enum khc_param {
   KII_PARAM_HOST,
   KII_PARAM_PATH,
   KII_PARAM_METHOD,
   KII_PARAM_REQ_HEADERS
-} kch_param;
+} khc_param;
 
-typedef enum kch_state {
+typedef enum khc_state {
   KII_STATE_IDLE,
   KII_STATE_CONNECT,
   KII_STATE_REQ_LINE,
@@ -53,9 +53,9 @@ typedef enum kch_state {
   KII_STATE_RESP_BODY_CALLBACK,
   KII_STATE_CLOSE,
   KII_STATE_FINISHED,
-} kch_state;
+} khc_state;
 
-typedef enum kch_code {
+typedef enum khc_code {
   KII_ERR_OK,
   KII_ERR_SOCK_CONNECT,
   KII_ERR_SOCK_CLOSE,
@@ -65,9 +65,9 @@ typedef enum kch_code {
   KII_ERR_WRITE_CALLBACK,
   KII_ERR_ALLOCATION,
   KII_ERR_FAIL,
-} kch_code;
+} khc_code;
 
-typedef struct kch {
+typedef struct khc {
   KII_CB_WRITE _cb_write;
   void* _write_data;
   KII_CB_READ _cb_read;
@@ -76,14 +76,14 @@ typedef struct kch {
   void* _header_data;
 
   /** Request header list */
-  kch_slist* _req_headers;
+  khc_slist* _req_headers;
 
   char* _host;
   char* _path;
   char* _method;
 
   /** State machine */
-  kch_state _state;
+  khc_state _state;
 
   /** Socket functions. */
   KII_CB_SOCK_CONNECT _cb_sock_connect;
@@ -96,7 +96,7 @@ typedef struct kch {
   void* _sock_ctx_recv;
   void* _sock_ctx_close;
 
-  kch_slist* _current_req_header;
+  khc_slist* _current_req_header;
 
   /** Request body buffer stream */
   char _read_buffer[READ_REQ_BUFFER_SIZE];
@@ -124,45 +124,45 @@ typedef struct kch {
   char _body_buffer[READ_BODY_SIZE];
   size_t _body_read_size;
 
-  kch_code _result;
-} kch;
+  khc_code _result;
+} khc;
 
-kch_code kch_perform(kch* kch);
+khc_code khc_perform(khc* khc);
 
-kch_code kch_set_param(kch* kch, kch_param param_type, void* data);
+khc_code khc_set_param(khc* khc, khc_param param_type, void* data);
 
-kch_code kch_set_cb_sock_connect(
-  kch* kch,
+khc_code khc_set_cb_sock_connect(
+  khc* khc,
   KII_CB_SOCK_CONNECT cb,
   void* userdata);
 
-kch_code kch_set_cb_sock_send(
-  kch* kch,
+khc_code khc_set_cb_sock_send(
+  khc* khc,
   KII_CB_SOCK_SEND cb,
   void* userdata);
 
-kch_code kch_set_cb_sock_recv(
-  kch* kch,
+khc_code khc_set_cb_sock_recv(
+  khc* khc,
   KII_CB_SOCK_RECV cb,
   void* userdata);
 
-kch_code kch_set_cb_sock_close(
-  kch* kch,
+khc_code khc_set_cb_sock_close(
+  khc* khc,
   KII_CB_SOCK_CLOSE cb,
   void* userdata);
 
-kch_code kch_set_cb_read(
-  kch* kch,
+khc_code khc_set_cb_read(
+  khc* khc,
   KII_CB_READ cb,
   void* userdata);
 
-kch_code kch_set_cb_write(
-  kch* kch,
+khc_code khc_set_cb_write(
+  khc* khc,
   KII_CB_WRITE cb,
   void* userdata);
 
-kch_code kch_set_cb_header(
-  kch* kch,
+khc_code khc_set_cb_header(
+  khc* khc,
   KII_CB_HEADER cb,
   void* userdata);
 
@@ -170,4 +170,4 @@ kch_code kch_set_cb_header(
 }
 #endif
 
-#endif //__kch
+#endif //__khc

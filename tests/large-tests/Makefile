@@ -7,7 +7,7 @@ TARGET=./large-test
 INCLUDES=-I. -I.. -I../../src -I$(LIB_BUILD_DIR)/include
 LIBS_DIR=-L$(LIB_BUILD_DIR)/lib
 
-LIBS=-lkch -lssl -lcrypto
+LIBS=-lkhc -lssl -lcrypto
 SRCS=$(wildcard *.cpp)
 SRCS+=$(wildcard *.c)
 TEST_RESULT_DIR=test-results/junit

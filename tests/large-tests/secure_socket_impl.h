@@ -1,7 +1,7 @@
 #ifndef __KII_CORE_SOCKET
 #define __KII_CORE_SOCKET
 
-#include "kch_socket_callback.h"
+#include "khc_socket_callback.h"
 #include <openssl/ssl.h>
 
 #ifdef __cplusplus
@@ -15,22 +15,22 @@ typedef struct _ssl_context
     int socket;
 } ssl_context_t;
 
-kch_sock_code_t
+khc_sock_code_t
     s_connect_cb(void* socket_context, const char* host,
             unsigned int port);
 
-kch_sock_code_t
+khc_sock_code_t
     s_send_cb(void* socket_context,
             const char* buffer,
             size_t length);
 
-kch_sock_code_t
+khc_sock_code_t
     s_recv_cb(void* socket_context,
             char* buffer,
             size_t length_to_read,
             size_t* out_actual_length);
 
-kch_sock_code_t
+khc_sock_code_t
     s_close_cb(void* socket_context);
 
 

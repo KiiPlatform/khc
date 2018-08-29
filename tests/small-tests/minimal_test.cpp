@@ -2,35 +2,35 @@
 
 #include <string.h>
 #include "catch.hpp"
-#include <kch.h>
-#include "kch_impl.h"
+#include <khc.h>
+#include "khc_impl.h"
 #include "http_test.h"
 #include "test_callbacks.h"
 #include <sstream>
 
 TEST_CASE( "HTTP minimal" ) {
-  kch http;
+  khc http;
 
   http_test::Resp resp;
   resp.headers = { "HTTP/1.0 200 OK" };
 
-  kch_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
-  kch_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
-  kch_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
-  kch_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
+  khc_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
+  khc_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
+  khc_set_param(&http, KII_PARAM_PATH, (char*)"/api/apps");
+  khc_set_param(&http, KII_PARAM_REQ_HEADERS, NULL);
 
   sock_ctx s_ctx;
-  kch_set_cb_sock_connect(&http, cb_connect, &s_ctx);
-  kch_set_cb_sock_send(&http, cb_send, &s_ctx);
-  kch_set_cb_sock_recv(&http, cb_recv, &s_ctx);
-  kch_set_cb_sock_close(&http, cb_close, &s_ctx);
+  khc_set_cb_sock_connect(&http, cb_connect, &s_ctx);
+  khc_set_cb_sock_send(&http, cb_send, &s_ctx);
+  khc_set_cb_sock_recv(&http, cb_recv, &s_ctx);
+  khc_set_cb_sock_close(&http, cb_close, &s_ctx);
 
   io_ctx io_ctx;
-  kch_set_cb_read(&http, cb_read, &io_ctx);
-  kch_set_cb_write(&http, cb_write, &io_ctx);
-  kch_set_cb_header(&http, cb_header, &io_ctx);
+  khc_set_cb_read(&http, cb_read, &io_ctx);
+  khc_set_cb_write(&http, cb_write, &io_ctx);
+  khc_set_cb_header(&http, cb_header, &io_ctx);
 
-  kch_state_idle(&http);
+  khc_state_idle(&http);
   REQUIRE( http._state == KII_STATE_CONNECT );
   REQUIRE( http._result == KII_ERR_OK );
 
@@ -43,7 +43,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kch_state_connect(&http);
+  khc_state_connect(&http);
   REQUIRE( http._state == KII_STATE_REQ_LINE );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
@@ -57,12 +57,12 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kch_state_req_line(&http);
+  khc_state_req_line(&http);
   REQUIRE( http._state == KII_STATE_REQ_HEADER );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
-  kch_state_req_header(&http);
+  khc_state_req_header(&http);
   REQUIRE( http._state == KII_STATE_REQ_HEADER_END );
   REQUIRE( http._result == KII_ERR_OK );
 
@@ -74,7 +74,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kch_state_req_header_end(&http);
+  khc_state_req_header_end(&http);
   REQUIRE( http._state == KII_STATE_REQ_BODY_READ );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
@@ -88,7 +88,7 @@ TEST_CASE( "HTTP minimal" ) {
     strncpy(buffer, body, strlen(body));
     return strlen(body);
   };
-  kch_state_req_body_read(&http);
+  khc_state_req_body_read(&http);
   REQUIRE( http._state == KII_STATE_REQ_BODY_SEND );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( http._read_req_end == 1 );
@@ -102,12 +102,12 @@ TEST_CASE( "HTTP minimal" ) {
     REQUIRE( strncmp(buffer, body, length) == 0 );
     return KIISOCK_OK;
   };
-  kch_state_req_body_send(&http);
+  khc_state_req_body_send(&http);
   REQUIRE( http._state == KII_STATE_RESP_HEADERS_ALLOC );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
 
-  kch_state_resp_headers_alloc(&http);
+  khc_state_resp_headers_alloc(&http);
   REQUIRE( http._state == KII_STATE_RESP_HEADERS_READ );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( *http._resp_header_buffer == '\0' );
@@ -122,7 +122,7 @@ TEST_CASE( "HTTP minimal" ) {
     return KIISOCK_OK;
   };
 
-  kch_state_resp_headers_read(&http);
+  khc_state_resp_headers_read(&http);
   REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KII_ERR_OK );
@@ -142,7 +142,7 @@ TEST_CASE( "HTTP minimal" ) {
     return size * count;
   };
 
-  kch_state_resp_headers_callback(&http);
+  khc_state_resp_headers_callback(&http);
   REQUIRE( http._state == KII_STATE_CLOSE );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KII_ERR_OK );
@@ -153,7 +153,7 @@ TEST_CASE( "HTTP minimal" ) {
     called = true;
     return KIISOCK_OK;
   };
-  kch_state_close(&http);
+  khc_state_close(&http);
   REQUIRE( http._state == KII_STATE_FINISHED );
   REQUIRE( http._result == KII_ERR_OK );
   REQUIRE( called );
