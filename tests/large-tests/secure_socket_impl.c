@@ -53,7 +53,13 @@ kii_sock_code_t
     }
 
     SSL_library_init();
-    ssl_ctx = SSL_CTX_new(TLS_client_method());
+    const SSL_METHOD *method =
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
+        TLSv1_2_client_method();
+#else
+        TLS_client_method();
+#endif
+    ssl_ctx = SSL_CTX_new(method);
     if (ssl_ctx == NULL){
         printf("failed to init ssl context.\n");
         return KIISOCK_FAIL;
