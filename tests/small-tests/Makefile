@@ -9,6 +9,7 @@ LIBS_DIR=-L$(LIB_BUILD_DIR)/lib
 
 LIBS=-lkhc
 SRCS=$(wildcard *.cpp)
+SRCS+=$(wildcard ../*.cpp)
 TEST_RESULT_DIR=test-results/junit
 TEST_RESULT=$(TEST_RESULT_DIR)/test-result.xml
 

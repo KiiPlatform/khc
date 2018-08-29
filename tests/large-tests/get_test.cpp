@@ -4,27 +4,7 @@
 #include <khc.h>
 #include "secure_socket_impl.h"
 #include "khc_impl.h"
-
-typedef struct io_ctx {
-  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_read;
-  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_header;
-  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_write;
-} io_ctx;
-
-size_t cb_write(char *buffer, size_t size, size_t count, void *userdata) {
-  io_ctx* ctx = (io_ctx*)(userdata);
-  return ctx->on_write(buffer, size, count, userdata);
-}
-
-size_t cb_read(char *buffer, size_t size, size_t count, void *userdata) {
-  io_ctx* ctx = (io_ctx*)(userdata);
-  return ctx->on_read(buffer, size, count, userdata);
-}
-
-size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
-  io_ctx* ctx = (io_ctx*)(userdata);
-  return ctx->on_header(buffer, size, count, userdata);
-}
+#include "test_callbacks.h"
 
 TEST_CASE( "HTTP Get" ) {
   khc http;
@@ -40,10 +20,10 @@ TEST_CASE( "HTTP Get" ) {
   khc_set_cb_sock_recv(&http, s_recv_cb, &s_ctx);
   khc_set_cb_sock_close(&http, s_close_cb, &s_ctx);
 
-  io_ctx io_ctx;
-  khc_set_cb_read(&http, cb_read, &io_ctx);
-  khc_set_cb_write(&http, cb_write, &io_ctx);
-  khc_set_cb_header(&http, cb_header, &io_ctx);
+  khct::cb::IOCtx io_ctx;
+  khc_set_cb_read(&http, khct::cb::cb_read, &io_ctx);
+  khc_set_cb_write(&http, khct::cb::cb_write, &io_ctx);
+  khc_set_cb_header(&http, khct::cb::cb_header, &io_ctx);
 
   int on_read_called = 0;
   io_ctx.on_read = [=, &on_read_called](char *buffer, size_t size, size_t count, void *userdata) {

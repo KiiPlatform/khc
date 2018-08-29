@@ -20,16 +20,16 @@ TEST_CASE( "HTTP response test" ) {
   khc_set_param(&http, KHC_PARAM_PATH, (char*)"/api/apps");
   khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
 
-  sock_ctx s_ctx;
-  khc_set_cb_sock_connect(&http, cb_connect, &s_ctx);
-  khc_set_cb_sock_send(&http, cb_send, &s_ctx);
-  khc_set_cb_sock_recv(&http, cb_recv, &s_ctx);
-  khc_set_cb_sock_close(&http, cb_close, &s_ctx);
+  khct::cb::SockCtx s_ctx;
+  khc_set_cb_sock_connect(&http, khct::cb::cb_connect, &s_ctx);
+  khc_set_cb_sock_send(&http, khct::cb::cb_send, &s_ctx);
+  khc_set_cb_sock_recv(&http, khct::cb::cb_recv, &s_ctx);
+  khc_set_cb_sock_close(&http, khct::cb::cb_close, &s_ctx);
 
-  io_ctx io_ctx;
-  khc_set_cb_read(&http, cb_read, &io_ctx);
-  khc_set_cb_write(&http, cb_write, &io_ctx);
-  khc_set_cb_header(&http, cb_header, &io_ctx);
+  khct::cb::IOCtx io_ctx;
+  khc_set_cb_read(&http, khct::cb::cb_read, &io_ctx);
+  khc_set_cb_write(&http, khct::cb::cb_write, &io_ctx);
+  khc_set_cb_header(&http, khct::cb::cb_header, &io_ctx);
 
   int on_connect_called = 0;
   s_ctx.on_connect = [=, &on_connect_called](void* socket_context, const char* host, unsigned int port) {
