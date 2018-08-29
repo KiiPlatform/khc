@@ -16,6 +16,24 @@
     "set": "cpp",
     "utility": "cpp",
     "string.h": "c",
-    "algorithm": "c"
+    "algorithm": "c",
+    "iosfwd": "cpp",
+    "__locale": "cpp",
+    "ios": "cpp",
+    "__config": "cpp",
+    "__nullptr": "cpp",
+    "cstddef": "cpp",
+    "exception": "cpp",
+    "new": "cpp",
+    "stdexcept": "cpp",
+    "type_traits": "cpp",
+    "typeinfo": "cpp",
+    "hashtable": "cpp",
+    "unordered_map": "cpp",
+    "__string": "cpp",
+    "istream": "cpp",
+    "__hash_table": "cpp",
+    "hash_map": "cpp",
+    "list": "cpp"
   }
 }

@@ -4,57 +4,15 @@
 #include "catch.hpp"
 #include <kii_http.h>
 #include "kii_http_impl.h"
-
-typedef struct sock_ctx {
-  std::function<kii_sock_code_t(void* socket_context, const char* host, unsigned int port)> on_connect;
-  std::function<kii_sock_code_t(void* socket_context, const char* buffer, size_t length)> on_send;
-  std::function<kii_sock_code_t(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length)> on_recv;
-  std::function<kii_sock_code_t(void* socket_context)> on_close;
-} sock_ctx;
-
-typedef struct io_ctx {
-  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_read;
-  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_header;
-  std::function<size_t(char *buffer, size_t size, size_t count, void *userdata)> on_write;
-} io_ctx;
-
-kii_sock_code_t cb_connect(void* socket_context, const char* host, unsigned int port) {
-  sock_ctx* ctx = (sock_ctx*)socket_context;
-  return ctx->on_connect(socket_context, host, port);
-}
-
-kii_sock_code_t cb_send (void* socket_context, const char* buffer, size_t length) {
-  sock_ctx* ctx = (sock_ctx*)socket_context;
-  return ctx->on_send(socket_context, buffer, length);
-}
-
-kii_sock_code_t cb_recv(void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
-  sock_ctx* ctx = (sock_ctx*)socket_context;
-  return ctx->on_recv(socket_context, buffer, length_to_read, out_actual_length);
-}
-
-kii_sock_code_t cb_close(void* socket_context) {
-  sock_ctx* ctx = (sock_ctx*)socket_context;
-  return ctx->on_close(socket_context);
-}
-
-size_t cb_write(char *buffer, size_t size, size_t count, void *userdata) {
-  io_ctx* ctx = (io_ctx*)(userdata);
-  return ctx->on_write(buffer, size, count, userdata);
-}
-
-size_t cb_read(char *buffer, size_t size, size_t count, void *userdata) {
-  io_ctx* ctx = (io_ctx*)(userdata);
-  return ctx->on_read(buffer, size, count, userdata);
-}
-
-size_t cb_header(char *buffer, size_t size, size_t count, void *userdata) {
-  io_ctx* ctx = (io_ctx*)(userdata);
-  return ctx->on_header(buffer, size, count, userdata);
-}
+#include "http_test.h"
+#include "test_callbacks.h"
+#include <sstream>
 
 TEST_CASE( "HTTP minimal" ) {
   kii_http http;
+
+  http_test::Resp resp;
+  resp.headers = { "HTTP/1.0 200 OK" };
 
   kii_http_set_param(&http, KII_PARAM_HOST, (char*)"api.kii.com");
   kii_http_set_param(&http, KII_PARAM_METHOD, (char*)"GET");
@@ -157,13 +115,10 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE (http._resp_header_buffer_size == 1024 );
 
   called = false;
-  s_ctx.on_recv = [=, &called](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+  s_ctx.on_recv = [=, &called, &resp](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
     REQUIRE( length_to_read == 1023 );
-    const char status_line[] = "HTTP/1.0 200 OK\r\n\r\n";
-    size_t len = strlen(status_line);
-    strncpy(buffer, status_line, len);
-    *out_actual_length = len;
+    *out_actual_length = resp.to_istringstream().readsome(buffer, length_to_read);
     return KIISOCK_OK;
   };
 
@@ -171,15 +126,15 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE( http._state == KII_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KII_ERR_OK );
-  // FIXME: Multiple Declaration.
-  const char status_line[] = "HTTP/1.0 200 OK\r\n\r\n";
-  REQUIRE( http._resp_header_read_size == strlen(status_line) );
+  char buffer[1024];
+  size_t len = resp.to_istringstream().readsome((char*)&buffer, 1023);
+  REQUIRE( http._resp_header_read_size == len );
   REQUIRE( called );
 
   called = false;
-  io_ctx.on_header = [=, &called](char *buffer, size_t size, size_t count, void *userdata) {
+  io_ctx.on_header = [=, &called, &resp](char *buffer, size_t size, size_t count, void *userdata) {
     called = true;
-    const char status_line[] = "HTTP/1.0 200 OK";
+    const char* status_line = resp.headers[0].c_str();
     size_t len = strlen(status_line);
     REQUIRE( size == 1);
     REQUIRE( count == len );

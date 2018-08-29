@@ -1,0 +1,19 @@
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Access-Control-Expose-Headers: Content-Type, Authorization, Content-Length, X-Requested-With, ETag, X-Step-Count, X-Environment-version, X-HTTP-Status-Code
+Age: 0
+Cache-Control: max-age=0, no-cache, no-store, no-cache, no-store
+Content-Type: application/json;charset=UTF-8
+Date: Tue, 28 Aug 2018 05:56:19 GMT
+Server: openresty
+X-HTTP-Status-Code: 200
+Content-Length: 190
+Connection: keep-alive
+
+{
+  "id" : "b56270b00022-171b-7e11-b35e-0911a10d",
+  "access_token" : "cHltZmFtc3cxMnJn._I4i4fNNTjRfWia9juCpRgipPUNWD1-6bobnfJvQPms",
+  "expires_in" : 2147483646,
+  "token_type" : "Bearer"
+}
