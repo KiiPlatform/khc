@@ -37,13 +37,13 @@ TEST_CASE( "HTTP response test" ) {
     REQUIRE( strncmp(host, "api.kii.com", strlen("api.kii.com")) == 0 );
     REQUIRE( strlen(host) == strlen("api.kii.com") );
     REQUIRE( port == 443 );
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   int on_send_called = 0;
   s_ctx.on_send = [=, &on_send_called](void* socket_context, const char* buffer, size_t length) {
     ++on_send_called;
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   int on_read_called = 0;
@@ -59,7 +59,7 @@ TEST_CASE( "HTTP response test" ) {
     ++on_recv_called = true;
     REQUIRE( length_to_read == 1023 );
     *out_actual_length = resp.to_istringstream().read(buffer, length_to_read).gcount();
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   int on_header_called = 0;
@@ -87,7 +87,7 @@ TEST_CASE( "HTTP response test" ) {
   int on_close_called = 0;
   s_ctx.on_close = [=, &on_close_called](void* socket_ctx) {
     ++on_close_called;
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   khc_code res = khc_perform(&http);

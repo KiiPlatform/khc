@@ -40,7 +40,7 @@ TEST_CASE( "HTTP minimal" ) {
     REQUIRE( strncmp(host, "api.kii.com", strlen("api.kii.com")) == 0 );
     REQUIRE( strlen(host) == strlen("api.kii.com") );
     REQUIRE( port == 443 );
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   khc_state_connect(&http);
@@ -54,7 +54,7 @@ TEST_CASE( "HTTP minimal" ) {
     const char req_line[] = "GET https://api.kii.com/api/apps HTTP/1.0\r\n";
     REQUIRE( length == strlen(req_line) );
     REQUIRE( strncmp(buffer, req_line, length) == 0 );
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   khc_state_req_line(&http);
@@ -71,7 +71,7 @@ TEST_CASE( "HTTP minimal" ) {
     called = true;
     REQUIRE( length == 2 );
     REQUIRE( strncmp(buffer, "\r\n", 2) == 0 );
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   khc_state_req_header_end(&http);
@@ -100,7 +100,7 @@ TEST_CASE( "HTTP minimal" ) {
     const char body[] = "http body";
     REQUIRE( length == strlen(body) );
     REQUIRE( strncmp(buffer, body, length) == 0 );
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
   khc_state_req_body_send(&http);
   REQUIRE( http._state == KHC_STATE_RESP_HEADERS_ALLOC );
@@ -119,7 +119,7 @@ TEST_CASE( "HTTP minimal" ) {
     called = true;
     REQUIRE( length_to_read == 1023 );
     *out_actual_length = resp.to_istringstream().read(buffer, length_to_read).gcount();
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
 
   khc_state_resp_headers_read(&http);
@@ -151,7 +151,7 @@ TEST_CASE( "HTTP minimal" ) {
   called = false;
   s_ctx.on_close = [=, &called](void* socket_ctx) {
     called = true;
-    return KHCSOCK_OK;
+    return KHC_SOCK_OK;
   };
   khc_state_close(&http);
   REQUIRE( http._state == KHC_STATE_FINISHED );

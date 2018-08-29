@@ -115,14 +115,14 @@ void khc_state_idle(khc* khc) {
 
 void khc_state_connect(khc* khc) {
   khc_sock_code_t con_res = khc->_cb_sock_connect(khc->_sock_ctx_connect, khc->_host, 443);
-  if (con_res == KHCSOCK_OK) {
+  if (con_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_REQ_LINE;
     return;
   }
-  if (con_res == KHCSOCK_AGAIN) {
+  if (con_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (con_res == KHCSOCK_FAIL) {
+  if (con_res == KHC_SOCK_FAIL) {
     khc->_result = KHC_ERR_SOCK_CONNECT;
     khc->_state = KHC_STATE_FINISHED;
     return;
@@ -160,15 +160,15 @@ void khc_state_req_line(khc* khc) {
   strcat(request_line, " ");
   strcat(request_line, http_version);
   khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, request_line, strlen(request_line));
-  if (send_res == KHCSOCK_OK) {
+  if (send_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_REQ_HEADER;
     khc->_current_req_header = khc->_req_headers;
     return;
   }
-  if (send_res == KHCSOCK_AGAIN) {
+  if (send_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (send_res == KHCSOCK_FAIL) {
+  if (send_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_SOCK_SEND;
     return;
@@ -198,14 +198,14 @@ void khc_state_req_header(khc* khc) {
 void khc_state_req_header_send(khc* khc) {
   char* line = khc->_current_req_header->data;
   khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, line, strlen(line));
-  if (send_res == KHCSOCK_OK) {
+  if (send_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_REQ_HEADER_SEND_CRLF;
     return;
   }
-  if (send_res == KHCSOCK_AGAIN) {
+  if (send_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (send_res == KHCSOCK_FAIL) {
+  if (send_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_SOCK_SEND;
     return;
@@ -214,15 +214,15 @@ void khc_state_req_header_send(khc* khc) {
 
 void khc_state_req_header_send_crlf(khc* khc) {
   khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, "\r\n", 2);
-  if (send_res == KHCSOCK_OK) {
+  if (send_res == KHC_SOCK_OK) {
     khc->_current_req_header = khc->_current_req_header->next;
     khc->_state = KHC_STATE_REQ_HEADER;
     return;
   }
-  if (send_res == KHCSOCK_AGAIN) {
+  if (send_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (send_res == KHCSOCK_FAIL) {
+  if (send_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_SOCK_SEND;
     return;
@@ -231,15 +231,15 @@ void khc_state_req_header_send_crlf(khc* khc) {
 
 void khc_state_req_header_end(khc* khc) {
   khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, "\r\n", 2);
-  if (send_res == KHCSOCK_OK) {
+  if (send_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_REQ_BODY_READ;
     khc->_read_req_end = 0;
     return;
   }
-  if (send_res == KHCSOCK_AGAIN) {
+  if (send_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (send_res == KHCSOCK_FAIL) {
+  if (send_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_SOCK_SEND;
     return;
@@ -262,7 +262,7 @@ void khc_state_req_body_read(khc* khc) {
 
 void khc_state_req_body_send(khc* khc) {
   khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, khc->_read_buffer, khc->_read_size);
-  if (send_res == KHCSOCK_OK) {
+  if (send_res == KHC_SOCK_OK) {
     if (khc->_read_req_end == 1) {
       khc->_state = KHC_STATE_RESP_HEADERS_ALLOC;
     } else {
@@ -270,10 +270,10 @@ void khc_state_req_body_send(khc* khc) {
     }
     return;
   }
-  if (send_res == KHCSOCK_AGAIN) {
+  if (send_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (send_res == KHCSOCK_FAIL) {
+  if (send_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_SOCK_SEND;
     return;
@@ -318,7 +318,7 @@ void khc_state_resp_headers_read(khc* khc) {
   size_t read_req_size = READ_RESP_HEADER_SIZE - 1;
   khc_sock_code_t read_res = 
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_resp_header_buffer_current_pos, read_req_size, &read_size);
-  if (read_res == KHCSOCK_OK) {
+  if (read_res == KHC_SOCK_OK) {
     khc->_resp_header_read_size += read_size;
     if (read_size < READ_RESP_HEADER_SIZE) {
       khc->_read_end = 1;
@@ -337,10 +337,10 @@ void khc_state_resp_headers_read(khc* khc) {
       return;
     }
   }
-  if (read_res == KHCSOCK_AGAIN) {
+  if (read_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (read_res == KHCSOCK_FAIL) {
+  if (read_res == KHC_SOCK_FAIL) {
     char* start = khc->_resp_header_buffer + READ_RESP_HEADER_SIZE - khc->_resp_header_buffer_size;
     free(start);
     khc->_resp_header_buffer = NULL;
@@ -416,7 +416,7 @@ void khc_state_resp_body_read(khc* khc) {
   size_t read_size = 0;
   khc_sock_code_t read_res = 
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_body_buffer, READ_BODY_SIZE, &read_size);
-  if (read_res == KHCSOCK_OK) {
+  if (read_res == KHC_SOCK_OK) {
     if (read_size < READ_BODY_SIZE) {
       khc->_read_end = 1;
     }
@@ -424,10 +424,10 @@ void khc_state_resp_body_read(khc* khc) {
     khc->_state = KHC_STATE_RESP_BODY_CALLBACK;
     return;
   }
-  if (read_res == KHCSOCK_AGAIN) {
+  if (read_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (read_res == KHCSOCK_FAIL) {
+  if (read_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_SOCK_RECV;
     return;
@@ -451,15 +451,15 @@ void khc_state_resp_body_callback(khc* khc) {
 
 void khc_state_close(khc* khc) {
   khc_sock_code_t close_res = khc->_cb_sock_close(khc->_sock_ctx_close);
-  if (close_res == KHCSOCK_OK) {
+  if (close_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_FINISHED;
     khc->_result = KHC_ERR_OK;
     return;
   }
-  if (close_res == KHCSOCK_AGAIN) {
+  if (close_res == KHC_SOCK_AGAIN) {
     return;
   }
-  if (close_res == KHCSOCK_FAIL) {
+  if (close_res == KHC_SOCK_FAIL) {
     khc->_state = KHC_STATE_FINISHED;
     khc->_result = KHC_ERR_SOCK_CLOSE;
     return;

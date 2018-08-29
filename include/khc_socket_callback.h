@@ -9,17 +9,17 @@ extern "C" {
 
 typedef enum khc_sock_code_t {
     /** Retrun this code when operation succeed. */
-    KHCSOCK_OK,
+    KHC_SOCK_OK,
 
     /** Return this code when operation failed. */
-    KHCSOCK_FAIL,
+    KHC_SOCK_FAIL,
 
     /** Return this code when operation is in progress.
      *
      *  SDK calls the callback again until the callbacks returns
-     *  KHCSOCK_OK or KHCSOCK_FAIL.
+     *  KHC_SOCK_OK or KHC_SOCK_FAIL.
      */
-    KHCSOCK_AGAIN
+    KHC_SOCK_AGAIN
 } khc_sock_code_t;
 
 /** Callback for connecting socket to server.
@@ -29,8 +29,8 @@ typedef enum khc_sock_code_t {
  * @param [in] host host name.
  * @param [in] port port number.
  * @return If connection is succeeded, applications need to return
- * KHCSOCK_OK. If connection is failed, applications need to
- * return KHCSOCK_FAIL. If applications want to pend returning
+ * KHC_SOCK_OK. If connection is failed, applications need to
+ * return KHC_SOCK_FAIL. If applications want to pend returning
  * success or fail, applications need to return KHC_SOCKETC_AGAIN.
  */
 typedef khc_sock_code_t
@@ -45,7 +45,7 @@ typedef khc_sock_code_t
  * @param [in] length length of buffer.
 
  * @return If applications succeed to send data, applications need to
- * return KHCSOCK_OK. If connection is failed. applications need
+ * return KHC_SOCK_OK. If connection is failed. applications need
  * to return KHC_SOCKETC__FAIL. If applications don't want to send
  * data, applications need to return KHC_SOCKETC_AGAIN. In this case,
  * KiiThingSDK Embedded Core pass same data to this callback again.
@@ -62,7 +62,7 @@ typedef khc_sock_code_t
  * @param [in] length_to_read buffer size.
  * @param [out] out_actual_length actual set data size.
  * @return If applications succeed to receive data and set the data to
- * buffer, applications need to return KHCSOCK_OK. Applications
+ * buffer, applications need to return KHC_SOCK_OK. Applications
  * also set data size to out_actual_length. If applications fail,
  * applications need to return KHC_HTTPC_FAIL. If applications want to
  * wait to receive data, applications need to return
@@ -80,8 +80,8 @@ typedef khc_sock_code_t
  * @param [in] socket_context context object.
  *
  * @return If applications succeed to close socket, applications need
- * to return KHCSOCK_OK. If applications fail to close socket,
- * applications need to return KHCSOCK_FAIL. If applications want
+ * to return KHC_SOCK_OK. If applications fail to close socket,
+ * applications need to return KHC_SOCK_FAIL. If applications want
  * to pend returning success or fail, applications need to return
  * KHC_SOCKETC_AGAIN.
  */
