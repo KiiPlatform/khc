@@ -8,6 +8,9 @@ extern "C"
 
 #include "khc.h"
 
+size_t khc_write_large_buff(char *buffer, size_t size, size_t count, void *userdata);
+size_t khc_read_large_buff(char *buffer, size_t size, size_t count, void *userdata);
+
 void khc_state_idle(khc* khc);
 void khc_state_connect(khc* khc);
 void khc_state_req_line(khc* khc);
