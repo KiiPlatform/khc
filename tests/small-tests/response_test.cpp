@@ -7,6 +7,7 @@
 
 TEST_CASE( "HTTP response test" ) {
   khc http;
+  khc_set_zero(&http);
 
   ifstream ifs;
   ifs.open("./data/resp-login.txt");

@@ -46,3 +46,52 @@ khc_code khc_perform(khc* khc) {
   
   return res;
 }
+
+khc_code khc_set_zero(khc* khc) {
+  // Callbacks.
+  khc->_cb_write = NULL;
+  khc->_write_data = NULL;
+
+  khc->_cb_header = NULL;
+  khc->_header_data = NULL;
+
+  khc->_cb_read = NULL;
+  khc->_read_data = NULL;
+
+  khc->_cb_sock_connect = NULL;
+  khc->_sock_ctx_connect = NULL;
+
+  khc->_cb_sock_send = NULL;
+  khc->_sock_ctx_send = NULL;
+
+  khc->_cb_sock_recv = NULL;
+  khc->_sock_ctx_recv = NULL;
+
+  khc->_cb_sock_close = NULL;
+  khc->_sock_ctx_close = NULL;
+
+  // Elements consist request header.
+  khc->_req_headers = NULL;
+  khc->_host = NULL;
+  khc->_path = NULL;
+  khc->_method = NULL;
+
+  // Internal states.
+  khc->_state = KHC_STATE_IDLE;
+  khc->_current_req_header = NULL;
+  khc->_read_size = 0;
+  khc->_read_req_end = 0;
+  khc->_resp_header_buffer = NULL;
+  khc->_resp_header_buffer_current_pos = NULL;
+  khc->_resp_header_buffer_size = 0;
+  khc->_resp_header_read_size = 0;
+  khc->_body_boundary = NULL;
+  khc->_cb_header_pos = NULL;
+  khc->_cb_header_remaining_size = 0;
+  khc->_body_flagment = NULL;
+  khc->_body_flagment_size = 0;
+  khc->_read_end = 0;
+  khc->_body_read_size = 0;
+  khc->_result = KHC_ERR_OK;
+  return KHC_ERR_OK;
+}

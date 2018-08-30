@@ -10,6 +10,7 @@
 
 TEST_CASE( "HTTP minimal" ) {
   khc http;
+  khc_set_zero(&http);
 
   khct::http::Resp resp;
   resp.headers = { "HTTP/1.0 200 OK" };

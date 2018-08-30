@@ -8,6 +8,7 @@
 
 TEST_CASE( "HTTP Post" ) {
   khc http;
+  khc_set_zero(&http);
 
   std::string app_id = "1ud4iv020xa8";
   std::string username = "pass-1234";
