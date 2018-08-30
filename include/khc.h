@@ -22,6 +22,7 @@ khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length)
 
 void khc_slist_free_all(khc_slist* slist);
 
+#define DEFAULT_STREAM_BUFF_SIZE 1024
 #define READ_REQ_BUFFER_SIZE 1024
 #define READ_RESP_HEADER_SIZE 1024
 #define READ_BODY_SIZE 1024
@@ -98,8 +99,10 @@ typedef struct khc {
 
   khc_slist* _current_req_header;
 
-  /** Request body buffer stream */
-  char _read_buffer[READ_REQ_BUFFER_SIZE];
+  char* _stream_buff;
+  size_t _stream_buff_size;
+  int _stream_buff_allocated;
+
   size_t _read_size;
   int _read_req_end;
 
@@ -132,6 +135,8 @@ khc_code khc_set_zero(khc* khc);
 khc_code khc_perform(khc* khc);
 
 khc_code khc_set_param(khc* khc, khc_param param_type, void* data);
+
+khc_code khc_set_stream_buff(khc* khc, char* buffer, size_t buff_size);
 
 khc_code khc_set_cb_sock_connect(
   khc* khc,

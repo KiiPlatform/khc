@@ -23,6 +23,13 @@ khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length)
   return slist;
 }
 
+khc_code khc_set_stream_buff(khc* khc, char* buffer, size_t buff_size) {
+  khc->_stream_buff = buffer;
+  khc->_stream_buff_size = buff_size;
+  memset(khc->_stream_buff, '\0', buff_size);
+  return KHC_ERR_OK;
+}
+
 void khc_slist_free_all(khc_slist* slist) {
   khc_slist *curr;
   curr = slist;
@@ -93,5 +100,10 @@ khc_code khc_set_zero(khc* khc) {
   khc->_read_end = 0;
   khc->_body_read_size = 0;
   khc->_result = KHC_ERR_OK;
+
+  // Stream Buffer
+  khc->_stream_buff = NULL;
+  khc->_stream_buff_size = 0;
+  khc->_stream_buff_allocated = 0;
   return KHC_ERR_OK;
 }

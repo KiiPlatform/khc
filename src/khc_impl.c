@@ -103,13 +103,19 @@ void khc_state_idle(khc* khc) {
     // Fallback to GET.
     khc->_method = "GET";
   }
-  memset(khc->_read_buffer, '\0', READ_REQ_BUFFER_SIZE);
+  if (khc->_stream_buff == NULL) {
+    char* buff = malloc(DEFAULT_STREAM_BUFF_SIZE);
+    if (buff == NULL) {
+      khc->_state = KHC_STATE_FINISHED;
+      khc->_result = KHC_ERR_ALLOCATION;
+      return;
+    }
+    khc->_stream_buff = buff;
+    khc->_stream_buff_allocated = 1;
+    khc->_stream_buff_size = DEFAULT_STREAM_BUFF_SIZE;
+  }
+  memset(khc->_stream_buff, '\0', khc->_stream_buff_size);
   khc->_state = KHC_STATE_CONNECT;
-  khc->_resp_header_buffer_size = 0;
-  khc->_read_end = 0;
-  khc->_read_size = 0;
-  khc->_resp_header_read_size = 0;
-  khc->_result = KHC_ERR_OK;
   return;
 }
 
@@ -247,7 +253,7 @@ void khc_state_req_header_end(khc* khc) {
 }
 
 void khc_state_req_body_read(khc* khc) {
-  khc->_read_size = khc->_cb_read(khc->_read_buffer, 1, READ_BODY_SIZE, khc->_read_data);
+  khc->_read_size = khc->_cb_read(khc->_stream_buff, 1, khc->_stream_buff_size, khc->_read_data);
   // TODO: handle read failure. let return signed value?
   if (khc->_read_size > 0) {
     khc->_state = KHC_STATE_REQ_BODY_SEND;
@@ -261,7 +267,7 @@ void khc_state_req_body_read(khc* khc) {
 }
 
 void khc_state_req_body_send(khc* khc) {
-  khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, khc->_read_buffer, khc->_read_size);
+  khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, khc->_stream_buff, khc->_read_size);
   if (send_res == KHC_SOCK_OK) {
     if (khc->_read_req_end == 1) {
       khc->_state = KHC_STATE_RESP_HEADERS_ALLOC;
@@ -450,6 +456,12 @@ void khc_state_resp_body_callback(khc* khc) {
 }
 
 void khc_state_close(khc* khc) {
+  if (khc->_stream_buff_allocated == 1) {
+    free(khc->_stream_buff);
+    khc->_stream_buff = NULL;
+    khc->_stream_buff_size = 0;
+    khc->_stream_buff_allocated = 0;
+  }
   khc_sock_code_t close_res = khc->_cb_sock_close(khc->_sock_ctx_close);
   if (close_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_FINISHED;
