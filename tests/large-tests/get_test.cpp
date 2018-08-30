@@ -8,7 +8,7 @@
 
 TEST_CASE( "HTTP Get" ) {
   khc http;
-
+  khc_set_zero(&http);
   khc_set_param(&http, KHC_PARAM_HOST, (char*)"api-jp.kii.com");
   khc_set_param(&http, KHC_PARAM_METHOD, (char*)"GET");
   khc_set_param(&http, KHC_PARAM_PATH, (char*)"");

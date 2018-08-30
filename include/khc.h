@@ -127,6 +127,8 @@ typedef struct khc {
   khc_code _result;
 } khc;
 
+khc_code khc_set_zero(khc* khc);
+
 khc_code khc_perform(khc* khc);
 
 khc_code khc_set_param(khc* khc, khc_param param_type, void* data);
