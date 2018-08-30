@@ -26,7 +26,6 @@ khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length)
 khc_code khc_set_stream_buff(khc* khc, char* buffer, size_t buff_size) {
   khc->_stream_buff = buffer;
   khc->_stream_buff_size = buff_size;
-  memset(khc->_stream_buff, '\0', buff_size);
   return KHC_ERR_OK;
 }
 

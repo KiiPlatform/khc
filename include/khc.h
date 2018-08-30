@@ -124,7 +124,6 @@ typedef struct khc {
   size_t _body_flagment_size;
   int _read_end;
 
-  char _body_buffer[READ_BODY_SIZE];
   size_t _body_read_size;
 
   khc_code _result;

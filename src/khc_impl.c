@@ -114,7 +114,6 @@ void khc_state_idle(khc* khc) {
     khc->_stream_buff_allocated = 1;
     khc->_stream_buff_size = DEFAULT_STREAM_BUFF_SIZE;
   }
-  memset(khc->_stream_buff, '\0', khc->_stream_buff_size);
   khc->_state = KHC_STATE_CONNECT;
   return;
 }
@@ -421,7 +420,7 @@ void khc_state_resp_body_flagment(khc* khc) {
 void khc_state_resp_body_read(khc* khc) {
   size_t read_size = 0;
   khc_sock_code_t read_res = 
-    khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_body_buffer, READ_BODY_SIZE, &read_size);
+    khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_stream_buff, khc->_stream_buff_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
     if (read_size < READ_BODY_SIZE) {
       khc->_read_end = 1;
@@ -441,7 +440,7 @@ void khc_state_resp_body_read(khc* khc) {
 }
 
 void khc_state_resp_body_callback(khc* khc) {
-  size_t written = khc->_cb_write(khc->_body_buffer, 1, khc->_body_read_size, khc->_write_data);
+  size_t written = khc->_cb_write(khc->_stream_buff, 1, khc->_stream_buff_size, khc->_write_data);
   if (written < khc->_body_read_size) { // Error in write callback.
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_WRITE_CALLBACK;
