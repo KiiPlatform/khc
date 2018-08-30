@@ -23,9 +23,7 @@ khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length)
 void khc_slist_free_all(khc_slist* slist);
 
 #define DEFAULT_STREAM_BUFF_SIZE 1024
-#define READ_REQ_BUFFER_SIZE 1024
-#define READ_RESP_HEADER_SIZE 1024
-#define READ_BODY_SIZE 1024
+#define RESP_HEADER_BUFF_SIZE 1024
 
 typedef enum khc_param {
   KHC_PARAM_HOST,
