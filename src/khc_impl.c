@@ -128,7 +128,7 @@ void khc_state_idle(khc* khc) {
     // Fallback to GET.
     khc->_method = "GET";
   }
-  if (khc->_stream_buff == NULL && khc->_large_buff == NULL) {
+  if (khc->_stream_buff == NULL) {
     char* buff = malloc(DEFAULT_STREAM_BUFF_SIZE);
     if (buff == NULL) {
       khc->_state = KHC_STATE_FINISHED;
