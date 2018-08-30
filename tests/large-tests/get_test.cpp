@@ -14,11 +14,11 @@ TEST_CASE( "HTTP Get" ) {
   khc_set_param(&http, KHC_PARAM_PATH, (char*)"");
   khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
 
-  ssl_context_t s_ctx;
-  khc_set_cb_sock_connect(&http, s_connect_cb, &s_ctx);
-  khc_set_cb_sock_send(&http, s_send_cb, &s_ctx);
-  khc_set_cb_sock_recv(&http, s_recv_cb, &s_ctx);
-  khc_set_cb_sock_close(&http, s_close_cb, &s_ctx);
+  khct::ssl::SSLData s_ctx;
+  khc_set_cb_sock_connect(&http, khct::ssl::cb_connect, &s_ctx);
+  khc_set_cb_sock_send(&http, khct::ssl::cb_send, &s_ctx);
+  khc_set_cb_sock_recv(&http, khct::ssl::cb_recv, &s_ctx);
+  khc_set_cb_sock_close(&http, khct::ssl::cb_close, &s_ctx);
 
   khct::cb::IOCtx io_ctx;
   khc_set_cb_read(&http, khct::cb::cb_read, &io_ctx);
