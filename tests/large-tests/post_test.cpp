@@ -15,6 +15,8 @@ TEST_CASE( "HTTP Post" ) {
   std::string path = "/api/apps/" + app_id + "/oauth2/token";
   std::string host = "api-jp.kii.com";
   std::string x_kii_appid = "X-Kii-Appid: " + app_id;
+  std::string x_kii_appkey = "X-Kii-Appkey: dummy";
+  std::string content_type = "Content-Type: application/vnd.kii.OauthTokenRequest+json";
 
   khc_set_param(&http, KHC_PARAM_HOST, (void*)host.c_str());
   khc_set_param(&http, KHC_PARAM_METHOD, (char*)"POST");
@@ -30,10 +32,12 @@ TEST_CASE( "HTTP Post" ) {
   size_t body_len = req_body.length();
 
   // Prepare Req Headers.
-  khc_slist* headers;
+  khc_slist* headers = NULL;
   headers = khc_slist_append(headers, x_kii_appid.c_str(), x_kii_appid.length());
   std::string content_length = "Content-Length: " + std::to_string(body_len);
   headers = khc_slist_append(headers, content_length.c_str(), content_length.length());
+  headers = khc_slist_append(headers, content_type.c_str(), content_type.length());
+  headers = khc_slist_append(headers, x_kii_appkey.c_str(), x_kii_appkey.length());
 
   khc_set_param(&http, KHC_PARAM_REQ_HEADERS, headers);
 
