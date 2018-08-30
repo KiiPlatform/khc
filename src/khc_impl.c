@@ -103,13 +103,18 @@ void khc_state_idle(khc* khc) {
     // Fallback to GET.
     khc->_method = "GET";
   }
-  memset(khc->_read_buffer, '\0', READ_REQ_BUFFER_SIZE);
+  if (khc->_stream_buff == NULL) {
+    char* buff = malloc(DEFAULT_STREAM_BUFF_SIZE);
+    if (buff == NULL) {
+      khc->_state = KHC_STATE_FINISHED;
+      khc->_result = KHC_ERR_ALLOCATION;
+      return;
+    }
+    khc->_stream_buff = buff;
+    khc->_stream_buff_allocated = 1;
+    khc->_stream_buff_size = DEFAULT_STREAM_BUFF_SIZE;
+  }
   khc->_state = KHC_STATE_CONNECT;
-  khc->_resp_header_buffer_size = 0;
-  khc->_read_end = 0;
-  khc->_read_size = 0;
-  khc->_resp_header_read_size = 0;
-  khc->_result = KHC_ERR_OK;
   return;
 }
 
@@ -247,21 +252,21 @@ void khc_state_req_header_end(khc* khc) {
 }
 
 void khc_state_req_body_read(khc* khc) {
-  khc->_read_size = khc->_cb_read(khc->_read_buffer, 1, READ_BODY_SIZE, khc->_read_data);
+  khc->_read_size = khc->_cb_read(khc->_stream_buff, 1, khc->_stream_buff_size, khc->_read_data);
   // TODO: handle read failure. let return signed value?
   if (khc->_read_size > 0) {
     khc->_state = KHC_STATE_REQ_BODY_SEND;
   } else {
     khc->_state = KHC_STATE_RESP_HEADERS_ALLOC;
   }
-  if (khc->_read_size < READ_BODY_SIZE) {
+  if (khc->_read_size < khc->_stream_buff_size) {
     khc->_read_req_end = 1;
   }
   return;
 }
 
 void khc_state_req_body_send(khc* khc) {
-  khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, khc->_read_buffer, khc->_read_size);
+  khc_sock_code_t send_res = khc->_cb_sock_send(khc->_sock_ctx_send, khc->_stream_buff, khc->_read_size);
   if (send_res == KHC_SOCK_OK) {
     if (khc->_read_req_end == 1) {
       khc->_state = KHC_STATE_RESP_HEADERS_ALLOC;
@@ -281,21 +286,21 @@ void khc_state_req_body_send(khc* khc) {
 }
 
 void khc_state_resp_headers_alloc(khc* khc) {
-  khc->_resp_header_buffer = malloc(READ_RESP_HEADER_SIZE);
+  khc->_resp_header_buffer = malloc(RESP_HEADER_BUFF_SIZE);
   if (khc->_resp_header_buffer == NULL) {
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_ALLOCATION;
     return;
   }
-  memset(khc->_resp_header_buffer, '\0', READ_RESP_HEADER_SIZE);
-  khc->_resp_header_buffer_size = READ_RESP_HEADER_SIZE;
+  memset(khc->_resp_header_buffer, '\0', RESP_HEADER_BUFF_SIZE);
+  khc->_resp_header_buffer_size = RESP_HEADER_BUFF_SIZE;
   khc->_resp_header_buffer_current_pos = khc->_resp_header_buffer;
   khc->_state = KHC_STATE_RESP_HEADERS_READ;
   return;
 }
 
 void khc_state_resp_headers_realloc(khc* khc) {
-  void* newBuff = realloc(khc->_resp_header_buffer, khc->_resp_header_buffer_size + READ_RESP_HEADER_SIZE);
+  void* newBuff = realloc(khc->_resp_header_buffer, khc->_resp_header_buffer_size + RESP_HEADER_BUFF_SIZE);
   if (newBuff == NULL) {
     free(khc->_resp_header_buffer);
     khc->_resp_header_buffer = NULL;
@@ -307,20 +312,20 @@ void khc_state_resp_headers_realloc(khc* khc) {
   // Pointer: last part newly allocated.
   khc->_resp_header_buffer = newBuff;
   khc->_resp_header_buffer_current_pos = newBuff + khc->_resp_header_buffer_size;
-  memset(khc->_resp_header_buffer_current_pos, '\0', READ_RESP_HEADER_SIZE);
-  khc->_resp_header_buffer_size = khc->_resp_header_buffer_size + READ_RESP_HEADER_SIZE;
+  memset(khc->_resp_header_buffer_current_pos, '\0', RESP_HEADER_BUFF_SIZE);
+  khc->_resp_header_buffer_size = khc->_resp_header_buffer_size + RESP_HEADER_BUFF_SIZE;
   khc->_state = KHC_STATE_RESP_HEADERS_READ;
   return;
 }
 
 void khc_state_resp_headers_read(khc* khc) {
   size_t read_size = 0;
-  size_t read_req_size = READ_RESP_HEADER_SIZE - 1;
+  size_t read_req_size = RESP_HEADER_BUFF_SIZE - 1;
   khc_sock_code_t read_res = 
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_resp_header_buffer_current_pos, read_req_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
     khc->_resp_header_read_size += read_size;
-    if (read_size < READ_RESP_HEADER_SIZE) {
+    if (read_size < RESP_HEADER_BUFF_SIZE) {
       khc->_read_end = 1;
     }
     // Search boundary for whole buffer.
@@ -341,7 +346,7 @@ void khc_state_resp_headers_read(khc* khc) {
     return;
   }
   if (read_res == KHC_SOCK_FAIL) {
-    char* start = khc->_resp_header_buffer + READ_RESP_HEADER_SIZE - khc->_resp_header_buffer_size;
+    char* start = khc->_resp_header_buffer + RESP_HEADER_BUFF_SIZE - khc->_resp_header_buffer_size;
     free(start);
     khc->_resp_header_buffer = NULL;
     khc->_resp_header_buffer_size = 0;
@@ -415,9 +420,9 @@ void khc_state_resp_body_flagment(khc* khc) {
 void khc_state_resp_body_read(khc* khc) {
   size_t read_size = 0;
   khc_sock_code_t read_res = 
-    khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_body_buffer, READ_BODY_SIZE, &read_size);
+    khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_stream_buff, khc->_stream_buff_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
-    if (read_size < READ_BODY_SIZE) {
+    if (read_size < khc->_stream_buff_size) {
       khc->_read_end = 1;
     }
     khc->_body_read_size = read_size;
@@ -435,7 +440,7 @@ void khc_state_resp_body_read(khc* khc) {
 }
 
 void khc_state_resp_body_callback(khc* khc) {
-  size_t written = khc->_cb_write(khc->_body_buffer, 1, khc->_body_read_size, khc->_write_data);
+  size_t written = khc->_cb_write(khc->_stream_buff, 1, khc->_stream_buff_size, khc->_write_data);
   if (written < khc->_body_read_size) { // Error in write callback.
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_WRITE_CALLBACK;
@@ -450,6 +455,12 @@ void khc_state_resp_body_callback(khc* khc) {
 }
 
 void khc_state_close(khc* khc) {
+  if (khc->_stream_buff_allocated == 1) {
+    free(khc->_stream_buff);
+    khc->_stream_buff = NULL;
+    khc->_stream_buff_size = 0;
+    khc->_stream_buff_allocated = 0;
+  }
   khc_sock_code_t close_res = khc->_cb_sock_close(khc->_sock_ctx_close);
   if (close_res == KHC_SOCK_OK) {
     khc->_state = KHC_STATE_FINISHED;
