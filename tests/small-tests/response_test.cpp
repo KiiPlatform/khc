@@ -8,6 +8,7 @@
 TEST_CASE( "HTTP response test" ) {
   khc http;
   khc_set_zero(&http);
+  const size_t buff_size = DEFAULT_STREAM_BUFF_SIZE;
 
   ifstream ifs;
   ifs.open("./data/resp-login.txt");
@@ -51,7 +52,7 @@ TEST_CASE( "HTTP response test" ) {
   io_ctx.on_read = [=, &on_read_called](char *buffer, size_t size, size_t count, void *userdata) {
     ++on_read_called;
     REQUIRE( size == 1);
-    REQUIRE( count == 1024);
+    REQUIRE( count == buff_size);
     return 0;
   };
 

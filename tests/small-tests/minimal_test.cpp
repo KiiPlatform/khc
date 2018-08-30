@@ -11,6 +11,8 @@
 TEST_CASE( "HTTP minimal" ) {
   khc http;
   khc_set_zero(&http);
+  const size_t buff_size = DEFAULT_STREAM_BUFF_SIZE;
+  const size_t resp_header_buff_size = RESP_HEADER_BUFF_SIZE;
 
   khct::http::Resp resp;
   resp.headers = { "HTTP/1.0 200 OK" };
@@ -84,7 +86,7 @@ TEST_CASE( "HTTP minimal" ) {
   io_ctx.on_read = [=, &called](char *buffer, size_t size, size_t count, void *userdata) {
     called = true;
     REQUIRE( size == 1);
-    REQUIRE( count == 1024);
+    REQUIRE( count == buff_size);
     const char body[] = "http body";
     strncpy(buffer, body, strlen(body));
     return strlen(body);
@@ -113,12 +115,12 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE( http._result == KHC_ERR_OK );
   REQUIRE( *http._resp_header_buffer == '\0' );
   REQUIRE( http._resp_header_buffer == http._resp_header_buffer_current_pos );
-  REQUIRE (http._resp_header_buffer_size == 1024 );
+  REQUIRE (http._resp_header_buffer_size == resp_header_buff_size );
 
   called = false;
   s_ctx.on_recv = [=, &called, &resp](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
-    REQUIRE( length_to_read == 1023 );
+    REQUIRE( length_to_read == resp_header_buff_size - 1 );
     *out_actual_length = resp.to_istringstream().read(buffer, length_to_read).gcount();
     return KHC_SOCK_OK;
   };
@@ -127,8 +129,8 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE( http._state == KHC_STATE_RESP_HEADERS_CALLBACK );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KHC_ERR_OK );
-  char buffer[1024];
-  size_t len = resp.to_istringstream().read((char*)&buffer, 1023).gcount();
+  char buffer[resp_header_buff_size];
+  size_t len = resp.to_istringstream().read((char*)&buffer, resp_header_buff_size - 1).gcount();
   REQUIRE( http._resp_header_read_size == len );
   REQUIRE( called );
 
