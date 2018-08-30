@@ -15,7 +15,11 @@ khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length)
   if (slist == NULL) {
     return next;
   }
-  slist->next = next;
+  khc_slist* end = slist;
+  while (end->next != NULL) {
+    end = end->next;
+  }
+  end->next = next;
   return slist;
 }
 
