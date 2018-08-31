@@ -29,6 +29,24 @@ khc_code khc_set_stream_buff(khc* khc, char* buffer, size_t buff_size) {
   return KHC_ERR_OK;
 }
 
+khc_code khc_set_large_buff(khc* khc, char* buff, size_t buff_size) {
+  khc->_large_buff = buff;
+  khc->_large_buff_size = buff_size;
+  khc->_large_buff_req_size = strlen(buff);
+
+  // Reset stream buff. So that SDK allocates it later.
+  khc->_stream_buff = NULL;
+  khc->_stream_buff_size = 0;
+  khc->_stream_buff_allocated = 0;
+
+  // Replace callback functions.
+  khc->_cb_write = khc_write_large_buff;
+  khc->_write_data = khc;
+  khc->_cb_read = khc_read_large_buff;
+  khc->_read_data = khc;
+  return KHC_ERR_OK;
+}
+
 void khc_slist_free_all(khc_slist* slist) {
   khc_slist *curr;
   curr = slist;
@@ -104,5 +122,12 @@ khc_code khc_set_zero(khc* khc) {
   khc->_stream_buff = NULL;
   khc->_stream_buff_size = 0;
   khc->_stream_buff_allocated = 0;
+
+  // Large  Buffer.
+  khc->_large_buff = NULL;
+  khc->_large_buff_size = 0;
+  khc->_large_buff_req_size = 0;
+  khc->_large_buff_written = 0;
+  khc->_large_buff_read = 0;
   return KHC_ERR_OK;
 }

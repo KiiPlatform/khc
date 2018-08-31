@@ -4,6 +4,31 @@
 #include "khc.h"
 #include "khc_impl.h"
 
+size_t khc_write_large_buff(char *buffer, size_t size, size_t count, void *userdata) {
+  khc* k = (khc*)userdata;
+  size_t remain = k->_large_buff_size - k->_large_buff_written;
+  size_t req_size = size * count;
+  if (remain < req_size) {
+    // Insufficient buffer size.
+    return 0;
+  }
+  memcpy(k->_large_buff + k->_large_buff_written, buffer, req_size);
+  k->_large_buff_written += req_size;
+  return req_size;
+}
+
+size_t khc_read_large_buff(char *buffer, size_t size, size_t count, void *userdata) {
+  khc* k = (khc*)userdata;
+  size_t remain = k->_large_buff_req_size - k->_large_buff_read;
+  if (remain <= 0) {
+    return 0;
+  }
+  size_t to_read = (size * count > remain) ? (remain) : (size *count);
+  memcpy(buffer, k->_large_buff + k->_large_buff_read, to_read);
+  k->_large_buff_read += to_read;
+  return to_read;
+}
+
 khc_code khc_set_cb_sock_connect(
   khc* khc,
   KHC_CB_SOCK_CONNECT cb,

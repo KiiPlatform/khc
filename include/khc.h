@@ -101,6 +101,12 @@ typedef struct khc {
   size_t _stream_buff_size;
   int _stream_buff_allocated;
 
+  char* _large_buff;
+  size_t _large_buff_size;
+  size_t _large_buff_req_size;
+  size_t _large_buff_read;
+  size_t _large_buff_written;
+
   size_t _read_size;
   int _read_req_end;
 
@@ -134,6 +140,8 @@ khc_code khc_perform(khc* khc);
 khc_code khc_set_param(khc* khc, khc_param param_type, void* data);
 
 khc_code khc_set_stream_buff(khc* khc, char* buffer, size_t buff_size);
+
+khc_code khc_set_large_buff(khc* khc, char* buffer, size_t buff_size);
 
 khc_code khc_set_cb_sock_connect(
   khc* khc,
