@@ -126,13 +126,17 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   khc_state_resp_headers_read(&http);
-  REQUIRE( http._state == KHC_STATE_RESP_HEADERS_CALLBACK );
+  REQUIRE( http._state == KHC_STATE_RESP_STATUS_PARSE );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KHC_ERR_OK );
   char buffer[resp_header_buff_size];
   size_t len = resp.to_istringstream().read((char*)&buffer, resp_header_buff_size - 1).gcount();
   REQUIRE( http._resp_header_read_size == len );
   REQUIRE( called );
+
+  khc_state_resp_status_parse(&http);
+  REQUIRE( khc_get_status_code(&http) == 200 );
+  REQUIRE( http._state == KHC_STATE_RESP_HEADERS_CALLBACK );
 
   called = false;
   io_ctx.on_header = [=, &called, &resp](char *buffer, size_t size, size_t count, void *userdata) {

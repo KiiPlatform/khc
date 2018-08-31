@@ -54,6 +54,7 @@ TEST_CASE( "HTTP Get" ) {
 
   khc_code res = khc_perform(&http);
   REQUIRE( res == KHC_ERR_OK );
+  REQUIRE( khc_get_status_code(&http) == 404 );
   REQUIRE( on_read_called == 1 );
   REQUIRE( on_header_called > 1 );
   REQUIRE( on_write_called == 1 );

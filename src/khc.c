@@ -91,6 +91,7 @@ khc_code khc_set_zero(khc* khc) {
   khc->_resp_header_buffer_current_pos = NULL;
   khc->_resp_header_buffer_size = 0;
   khc->_resp_header_read_size = 0;
+  khc->_status_code =0;
   khc->_body_boundary = NULL;
   khc->_cb_header_pos = NULL;
   khc->_cb_header_remaining_size = 0;
@@ -105,4 +106,10 @@ khc_code khc_set_zero(khc* khc) {
   khc->_stream_buff_size = 0;
   khc->_stream_buff_allocated = 0;
   return KHC_ERR_OK;
+}
+
+int khc_get_status_code(
+  khc* khc
+) {
+  return khc->_status_code;
 }

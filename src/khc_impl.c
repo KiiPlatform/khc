@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "khc.h"
 #include "khc_impl.h"
 
@@ -336,7 +337,7 @@ void khc_state_resp_headers_read(khc* khc) {
       return;
     } else {
       khc->_body_boundary = boundary;
-      khc->_state = KHC_STATE_RESP_HEADERS_CALLBACK;
+      khc->_state = KHC_STATE_RESP_STATUS_PARSE;
       khc->_cb_header_remaining_size = khc->_resp_header_buffer_size;
       khc->_cb_header_pos = khc->_resp_header_buffer;
       return;
@@ -354,6 +355,25 @@ void khc_state_resp_headers_read(khc* khc) {
     khc->_result = KHC_ERR_SOCK_RECV;
     return;
   }
+}
+
+void khc_state_resp_status_parse(khc* khc) {
+  const char http_version[] = "HTTP/d.d ";
+  char* ptr = khc->_resp_header_buffer + strlen(http_version);
+
+  int status_code = 0;
+  for (int i = 0; i < 3; ++i) {
+    char d = ptr[i];
+    if (isdigit((int)d) == 0){
+      khc->_state = KHC_STATE_CLOSE;
+      khc->_result = KHC_ERR_FAIL;  
+      return;
+    }
+    status_code = status_code * 10 + (d - '0');
+  }
+  khc->_status_code = status_code;
+  khc->_state = KHC_STATE_RESP_HEADERS_CALLBACK;
+  return;
 }
 
 void khc_state_resp_headers_callback(khc* khc) {
@@ -490,6 +510,7 @@ const KHC_STATE_HANDLER state_handlers[] = {
   khc_state_resp_headers_alloc,
   khc_state_resp_headers_realloc,
   khc_state_resp_headers_read,
+  khc_state_resp_status_parse,
   khc_state_resp_headers_callback,
   khc_state_resp_body_flagment,
   khc_state_resp_body_read,

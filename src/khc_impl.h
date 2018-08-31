@@ -20,6 +20,7 @@ void khc_state_req_body_send(khc* khc);
 void khc_state_resp_headers_alloc(khc* khc);
 void khc_state_resp_headers_realloc(khc* khc);
 void khc_state_resp_headers_read(khc* khc);
+void khc_state_resp_status_parse(khc* khc);
 void khc_state_resp_headers_callback(khc* khc);
 void khc_state_resp_body_flagment(khc* khc);
 void khc_state_resp_body_read(khc* khc);

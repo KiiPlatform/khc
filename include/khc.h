@@ -45,6 +45,7 @@ typedef enum khc_state {
   KHC_STATE_RESP_HEADERS_ALLOC,
   KHC_STATE_RESP_HEADERS_REALLOC,
   KHC_STATE_RESP_HEADERS_READ,
+  KHC_STATE_RESP_STATUS_PARSE,
   KHC_STATE_RESP_HEADERS_CALLBACK,
   /** Process flagment of body obtaind when trying to find body boundary. */
   KHC_STATE_RESP_BODY_FLAGMENT,
@@ -110,6 +111,7 @@ typedef struct khc {
   size_t _resp_header_buffer_size;
   size_t _resp_header_read_size;
 
+  int _status_code;
   /** Pointer to the double CRLF boundary in the resp_header_buffer */
   char* _body_boundary;
 
@@ -169,6 +171,10 @@ khc_code khc_set_cb_header(
   khc* khc,
   KHC_CB_HEADER cb,
   void* userdata);
+
+int khc_get_status_code(
+  khc* khc
+);
 
 #ifdef __cplusplus
 }
