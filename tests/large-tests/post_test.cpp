@@ -81,6 +81,7 @@ TEST_CASE( "HTTP Post" ) {
 
   khc_code res = khc_perform(&http);
   khc_slist_free_all(headers);
+  REQUIRE( khc_get_status_code(&http) == 200 );
 
   // Parse response body.
   auto resp_body = oss.str();
