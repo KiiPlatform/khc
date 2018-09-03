@@ -17,10 +17,10 @@ TEST_CASE( "HTTP response test" ) {
 
   ifs.close();
 
-  khc_set_param(&http, KHC_PARAM_HOST, (char*)"api.kii.com");
-  khc_set_param(&http, KHC_PARAM_METHOD, (char*)"GET");
-  khc_set_param(&http, KHC_PARAM_PATH, (char*)"/api/apps");
-  khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
+  khc_set_host(&http, "api.kii.com");
+  khc_set_method(&http, "GET");
+  khc_set_path(&http, "/api/apps");
+  khc_set_req_headers(&http, NULL);
 
   khct::cb::SockCtx s_ctx;
   khc_set_cb_sock_connect(&http, khct::cb::mock_connect, &s_ctx);

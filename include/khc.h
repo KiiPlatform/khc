@@ -25,13 +25,6 @@ void khc_slist_free_all(khc_slist* slist);
 #define DEFAULT_STREAM_BUFF_SIZE 1024
 #define RESP_HEADER_BUFF_SIZE 1024
 
-typedef enum khc_param {
-  KHC_PARAM_HOST,
-  KHC_PARAM_PATH,
-  KHC_PARAM_METHOD,
-  KHC_PARAM_REQ_HEADERS
-} khc_param;
-
 typedef enum khc_state {
   KHC_STATE_IDLE,
   KHC_STATE_CONNECT,
@@ -64,6 +57,7 @@ typedef enum khc_code {
   KHC_ERR_HEADER_CALLBACK,
   KHC_ERR_WRITE_CALLBACK,
   KHC_ERR_ALLOCATION,
+  KHC_ERR_TOO_LARGE_DATA,
   KHC_ERR_FAIL,
 } khc_code;
 
@@ -78,9 +72,9 @@ typedef struct khc {
   /** Request header list */
   khc_slist* _req_headers;
 
-  char* _host;
-  char* _path;
-  char* _method;
+  char _host[128];
+  char _path[256];
+  char _method[16];
 
   /** State machine */
   khc_state _state;
@@ -133,7 +127,13 @@ khc_code khc_set_zero(khc* khc);
 
 khc_code khc_perform(khc* khc);
 
-khc_code khc_set_param(khc* khc, khc_param param_type, void* data);
+khc_code khc_set_host(khc* khc, const char* host);
+
+khc_code khc_set_path(khc* khc, const char* path);
+
+khc_code khc_set_method(khc* khc, const char* method);
+
+khc_code khc_set_req_headers(khc* khc, khc_slist* headers);
 
 khc_code khc_set_stream_buff(khc* khc, char* buffer, size_t buff_size);
 

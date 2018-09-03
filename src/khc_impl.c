@@ -75,34 +75,49 @@ khc_code khc_set_cb_header(
   return KHC_ERR_OK;
 }
 
-khc_code khc_set_param(khc* khc, khc_param param_type, void* data) {
-  switch(param_type) {
-    case KHC_PARAM_HOST:
-      khc->_host = (char*)data;
-      break;
-    case KHC_PARAM_PATH:
-      khc->_path = (char*)data;
-      break;
-    case KHC_PARAM_METHOD:
-      khc->_method = (char*)data;
-      break;
-    case KHC_PARAM_REQ_HEADERS:
-      khc->_req_headers = (khc_slist*)data;
-      break;
-    default:
-      return KHC_ERR_FAIL;
+khc_code khc_set_host(khc* khc, const char* host) {
+  size_t len = strlen(host);
+  size_t buff_len = sizeof(khc->_host) * sizeof(char);
+  if (buff_len < len + 1) {
+    return KHC_ERR_TOO_LARGE_DATA;
   }
+  memcpy(khc->_host, host, len + 1);
+  return KHC_ERR_OK;
+}
+
+khc_code khc_set_path(khc* khc, const char* path) {
+  size_t len = strlen(path);
+  size_t buff_len = sizeof(khc->_path) * sizeof(char);
+  if (buff_len < len + 1) {
+    return KHC_ERR_TOO_LARGE_DATA;
+  }
+  memcpy(khc->_path, path, len + 1);
+  return KHC_ERR_OK;
+}
+
+khc_code khc_set_method(khc* khc, const char* method) {
+  size_t len = strlen(method);
+  size_t buff_len = sizeof(khc->_method) * sizeof(char);
+  if (buff_len < len + 1) {
+    return KHC_ERR_TOO_LARGE_DATA;
+  }
+  memcpy(khc->_method, method, len + 1);
+  return KHC_ERR_OK;
+}
+
+khc_code khc_set_req_headers(khc* khc, khc_slist* headers) {
+  khc->_req_headers = headers;
   return KHC_ERR_OK;
 }
 
 void khc_state_idle(khc* khc) {
-  if (khc->_host == NULL) {
+  if (strlen(khc->_host) == 0) {
     // Fallback to localhost
-    khc->_host = "localhost";
+    strncpy(khc->_host, "localhost", sizeof(khc->_host));
   }
-  if (khc->_method == NULL) {
+  if (strlen(khc->_method) == 0) {
     // Fallback to GET.
-    khc->_method = "GET";
+    strncpy(khc->_method, "GET", sizeof(khc->_method));
   }
   if (khc->_stream_buff == NULL) {
     char* buff = malloc(DEFAULT_STREAM_BUFF_SIZE);

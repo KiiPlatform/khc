@@ -78,9 +78,9 @@ khc_code khc_set_zero(khc* khc) {
 
   // Elements consist request header.
   khc->_req_headers = NULL;
-  khc->_host = NULL;
-  khc->_path = NULL;
-  khc->_method = NULL;
+  khc->_host[0] = '\0';
+  khc->_path[0] = '\0';
+  khc->_method[0] = '\0';
 
   // Internal states.
   khc->_state = KHC_STATE_IDLE;

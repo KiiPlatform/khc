@@ -19,9 +19,9 @@ TEST_CASE( "HTTP Post" ) {
   std::string x_kii_appkey = "X-Kii-Appkey: dummy";
   std::string content_type = "Content-Type: application/vnd.kii.OauthTokenRequest+json";
 
-  khc_set_param(&http, KHC_PARAM_HOST, (void*)host.c_str());
-  khc_set_param(&http, KHC_PARAM_METHOD, (char*)"POST");
-  khc_set_param(&http, KHC_PARAM_PATH, (void*)path.c_str());
+  khc_set_host(&http, host.c_str());
+  khc_set_method(&http, "POST");
+  khc_set_path(&http, path.c_str());
 
   // Prepare Req Body.
   picojson::object o;
@@ -40,7 +40,7 @@ TEST_CASE( "HTTP Post" ) {
   headers = khc_slist_append(headers, content_type.c_str(), content_type.length());
   headers = khc_slist_append(headers, x_kii_appkey.c_str(), x_kii_appkey.length());
 
-  khc_set_param(&http, KHC_PARAM_REQ_HEADERS, headers);
+  khc_set_req_headers(&http, headers);
 
   khct::ssl::SSLData s_ctx;
   khc_set_cb_sock_connect(&http, khct::ssl::cb_connect, &s_ctx);
