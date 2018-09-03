@@ -9,10 +9,10 @@
 TEST_CASE( "HTTP Get" ) {
   khc http;
   khc_set_zero(&http);
-  khc_set_param(&http, KHC_PARAM_HOST, (char*)"api-jp.kii.com");
-  khc_set_param(&http, KHC_PARAM_METHOD, (char*)"GET");
-  khc_set_param(&http, KHC_PARAM_PATH, (char*)"");
-  khc_set_param(&http, KHC_PARAM_REQ_HEADERS, NULL);
+  khc_set_host(&http, "api-jp.kii.com");
+  khc_set_method(&http, "GET");
+  khc_set_method(&http, "");
+  khc_set_req_headers(&http, NULL);
 
   khct::ssl::SSLData s_ctx;
   khc_set_cb_sock_connect(&http, khct::ssl::cb_connect, &s_ctx);
