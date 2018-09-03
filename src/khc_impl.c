@@ -77,7 +77,7 @@ khc_code khc_set_cb_header(
 
 khc_code khc_set_host(khc* khc, const char* host) {
   size_t len = strlen(host);
-  size_t buff_len = sizeof(khc->_host) * sizeof(char);
+  size_t buff_len = sizeof(khc->_host);
   if (buff_len < len + 1) {
     return KHC_ERR_TOO_LARGE_DATA;
   }
@@ -87,7 +87,7 @@ khc_code khc_set_host(khc* khc, const char* host) {
 
 khc_code khc_set_path(khc* khc, const char* path) {
   size_t len = strlen(path);
-  size_t buff_len = sizeof(khc->_path) * sizeof(char);
+  size_t buff_len = sizeof(khc->_path);
   if (buff_len < len + 1) {
     return KHC_ERR_TOO_LARGE_DATA;
   }
@@ -97,7 +97,7 @@ khc_code khc_set_path(khc* khc, const char* path) {
 
 khc_code khc_set_method(khc* khc, const char* method) {
   size_t len = strlen(method);
-  size_t buff_len = sizeof(khc->_method) * sizeof(char);
+  size_t buff_len = sizeof(khc->_method);
   if (buff_len < len + 1) {
     return KHC_ERR_TOO_LARGE_DATA;
   }
