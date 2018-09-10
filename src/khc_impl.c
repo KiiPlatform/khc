@@ -475,7 +475,7 @@ void khc_state_resp_body_read(khc* khc) {
 }
 
 void khc_state_resp_body_callback(khc* khc) {
-  size_t written = khc->_cb_write(khc->_stream_buff, 1, khc->_stream_buff_size, khc->_write_data);
+  size_t written = khc->_cb_write(khc->_stream_buff, 1, khc->_body_read_size, khc->_write_data);
   if (written < khc->_body_read_size) { // Error in write callback.
     khc->_state = KHC_STATE_CLOSE;
     khc->_result = KHC_ERR_WRITE_CALLBACK;
