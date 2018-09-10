@@ -341,7 +341,7 @@ void khc_state_resp_headers_read(khc* khc) {
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_resp_header_buffer_current_pos, read_req_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
     khc->_resp_header_read_size += read_size;
-    if (read_size < RESP_HEADER_BUFF_SIZE) {
+    if (read_size < read_req_size) {
       khc->_read_end = 1;
     }
     // Search boundary for whole buffer.
