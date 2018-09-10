@@ -363,8 +363,7 @@ void khc_state_resp_headers_read(khc* khc) {
     return;
   }
   if (read_res == KHC_SOCK_FAIL) {
-    char* start = khc->_resp_header_buffer + RESP_HEADER_BUFF_SIZE - khc->_resp_header_buffer_size;
-    free(start);
+    free(khc->_resp_header_buffer);
     khc->_resp_header_buffer = NULL;
     khc->_resp_header_buffer_size = 0;
     khc->_state = KHC_STATE_CLOSE;
