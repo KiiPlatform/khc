@@ -125,6 +125,8 @@ typedef struct khc {
 
 khc_code khc_set_zero(khc* khc);
 
+khc_code khc_set_zero_excl_cb(khc* khc);
+
 khc_code khc_perform(khc* khc);
 
 khc_code khc_set_host(khc* khc, const char* host);
