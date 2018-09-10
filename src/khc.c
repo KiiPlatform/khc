@@ -76,7 +76,12 @@ khc_code khc_set_zero(khc* khc) {
   khc->_cb_sock_close = NULL;
   khc->_sock_ctx_close = NULL;
 
-  // Elements consist request header.
+  khc_set_zero_excl_cb(khc);
+
+  return KHC_ERR_OK;
+}
+
+khc_code khc_set_zero_excl_cb(khc* khc) {
   khc->_req_headers = NULL;
   khc->_host[0] = '\0';
   khc->_path[0] = '\0';
