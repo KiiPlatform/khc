@@ -342,7 +342,7 @@ void khc_state_resp_headers_read(khc* khc) {
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_resp_header_buffer_current_pos, read_req_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
     khc->_resp_header_read_size += read_size;
-    if (read_size < read_req_size) {
+    if (read_size == 0) {
       khc->_read_end = 1;
     }
     // Search boundary for whole buffer.
@@ -457,7 +457,7 @@ void khc_state_resp_body_read(khc* khc) {
   khc_sock_code_t read_res = 
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_stream_buff, khc->_stream_buff_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
-    if (read_size < khc->_stream_buff_size) {
+    if (read_size == 0) {
       khc->_read_end = 1;
     }
     khc->_body_read_size = read_size;
