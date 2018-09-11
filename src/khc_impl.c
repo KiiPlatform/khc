@@ -457,10 +457,12 @@ void khc_state_resp_body_read(khc* khc) {
   khc_sock_code_t read_res = 
     khc->_cb_sock_recv(khc->_sock_ctx_recv, khc->_stream_buff, khc->_stream_buff_size, &read_size);
   if (read_res == KHC_SOCK_OK) {
+    khc->_body_read_size = read_size;
     if (read_size == 0) {
       khc->_read_end = 1;
+      khc->_state = KHC_STATE_CLOSE;
+      return;
     }
-    khc->_body_read_size = read_size;
     khc->_state = KHC_STATE_RESP_BODY_CALLBACK;
     return;
   }
