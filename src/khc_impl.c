@@ -327,9 +327,10 @@ void khc_state_resp_headers_realloc(khc* khc) {
   }
   // Pointer: last part newly allocated.
   khc->_resp_header_buffer = newBuff;
-  khc->_resp_header_buffer_current_pos = newBuff + khc->_resp_header_buffer_size;
-  memset(khc->_resp_header_buffer_current_pos, '\0', RESP_HEADER_BUFF_SIZE);
-  khc->_resp_header_buffer_size = khc->_resp_header_buffer_size + RESP_HEADER_BUFF_SIZE;
+  khc->_resp_header_buffer_current_pos = newBuff + khc->_resp_header_read_size;
+  khc->_resp_header_buffer_size += RESP_HEADER_BUFF_SIZE;
+  size_t remain = khc->_resp_header_buffer_size - khc->_resp_header_read_size;
+  memset(khc->_resp_header_buffer_current_pos, '\0', remain);
   khc->_state = KHC_STATE_RESP_HEADERS_READ;
   return;
 }
@@ -362,8 +363,7 @@ void khc_state_resp_headers_read(khc* khc) {
     return;
   }
   if (read_res == KHC_SOCK_FAIL) {
-    char* start = khc->_resp_header_buffer + RESP_HEADER_BUFF_SIZE - khc->_resp_header_buffer_size;
-    free(start);
+    free(khc->_resp_header_buffer);
     khc->_resp_header_buffer = NULL;
     khc->_resp_header_buffer_size = 0;
     khc->_state = KHC_STATE_CLOSE;
