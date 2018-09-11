@@ -115,14 +115,22 @@ khc_sock_code_t
             size_t* out_actual_length)
 {
     khct::ssl::SSLData* ctx = (khct::ssl::SSLData*)socket_context;
+    *out_actual_length = 0;
     int ret = SSL_read(ctx->ssl, buffer, length_to_read);
     if (ret > 0) {
         *out_actual_length = ret;
         return KHC_SOCK_OK;
+    } else if (ret == 0) {
+        int ssl_error = SSL_get_error(ctx->ssl, ret);
+        if (ssl_error == SSL_ERROR_ZERO_RETURN) {
+            return KHC_SOCK_OK;
+        } else if (ssl_error == SSL_ERROR_WANT_READ || ssl_error == SSL_ERROR_WANT_WRITE) {
+            return KHC_SOCK_AGAIN;
+        } else {
+            return KHC_SOCK_FAIL;
+        }
+        return KHC_SOCK_FAIL;
     } else {
-        printf("failed to receive:\n");
-        /* TOOD: could be 0 on success? */
-        *out_actual_length = 0;
         return KHC_SOCK_FAIL;
     }
 }

@@ -118,16 +118,17 @@ TEST_CASE( "HTTP minimal" ) {
   REQUIRE (http._resp_header_buffer_size == resp_header_buff_size );
 
   called = false;
-  s_ctx.on_recv = [=, &called, &resp](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+  auto is = resp.to_istringstream();
+  s_ctx.on_recv = [=, &called, &resp, &is](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
     called = true;
     REQUIRE( length_to_read == resp_header_buff_size - 1 );
-    *out_actual_length = resp.to_istringstream().read(buffer, length_to_read).gcount();
+    *out_actual_length = is.read(buffer, length_to_read).gcount();
     return KHC_SOCK_OK;
   };
 
   khc_state_resp_headers_read(&http);
   REQUIRE( http._state == KHC_STATE_RESP_STATUS_PARSE );
-  REQUIRE( http._read_end == 1 );
+  REQUIRE( http._read_end == 0 );
   REQUIRE( http._result == KHC_ERR_OK );
   char buffer[resp_header_buff_size];
   size_t len = resp.to_istringstream().read((char*)&buffer, resp_header_buff_size - 1).gcount();
@@ -150,6 +151,19 @@ TEST_CASE( "HTTP minimal" ) {
   };
 
   khc_state_resp_headers_callback(&http);
+  REQUIRE( http._state == KHC_STATE_RESP_BODY_READ );
+  REQUIRE( http._read_end == 0 );
+  REQUIRE( http._result == KHC_ERR_OK );
+  REQUIRE( called );
+
+  called = false;
+  s_ctx.on_recv = [=, &called, &resp, &is](void* socket_context, char* buffer, size_t length_to_read, size_t* out_actual_length) {
+    called = true;
+    REQUIRE( length_to_read == buff_size);
+    *out_actual_length = is.read(buffer, length_to_read).gcount();
+    return KHC_SOCK_OK;
+  };
+  khc_state_resp_body_read(&http);
   REQUIRE( http._state == KHC_STATE_CLOSE );
   REQUIRE( http._read_end == 1 );
   REQUIRE( http._result == KHC_ERR_OK );
