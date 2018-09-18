@@ -8,8 +8,16 @@
 khc_slist* khc_slist_append(khc_slist* slist, const char* string, size_t length) {
   khc_slist* next;
   next = (khc_slist*)malloc(sizeof(khc_slist));
+  if (next == NULL) {
+    return NULL;
+  }
   next->next = NULL;
-  next->data = (char*)malloc(length+1);
+  void* temp = malloc(length+1);
+  if (temp == NULL) {
+    free(next);
+    return NULL;
+  }
+  next->data = (char*)temp;
   strncpy(next->data, string, length);
   next->data[length] = '\0';
   if (slist == NULL) {
